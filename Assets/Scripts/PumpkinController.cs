@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
-using UnityEditor;
 
 [RequireComponent(typeof(Rigidbody))]
 
@@ -33,6 +32,8 @@ public class PumpkinController : MonoBehaviour
     private TMP_Text distanceText;
     [SerializeField]
     private TMP_Text timeText;
+    [SerializeField]
+    private BottomTextController bottomText;
     private double startTime;
     private Vector2 moveInput;
     private bool shootInput;
@@ -41,7 +42,7 @@ public class PumpkinController : MonoBehaviour
     private bool upInput;
     private Skill? upSkill = Skill.Jump;
     private bool rightInput;
-    private Skill? rightSkill = null;
+    private Skill? rightSkill = Skill.Arrow;
     private bool downInput;
     private Skill? downSkill = Skill.Explode;
     private float jumpCooldown = 0f;
@@ -60,6 +61,11 @@ public class PumpkinController : MonoBehaviour
     private bool hasShot = false;
     private bool grounded = false;
     private Rigidbody rig;
+    private LineRenderer lineRenderer;
+    [SerializeField]
+    private int resolution = 30;
+    [SerializeField]
+    private float timeStep = 0.1f;
 
 
     [SerializeField]
@@ -71,6 +77,7 @@ public class PumpkinController : MonoBehaviour
     void Awake()
     {
         rig = GetComponent<Rigidbody>();
+        lineRenderer = GetComponentInChildren<LineRenderer>();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -85,6 +92,25 @@ public class PumpkinController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Time.time <= arrowTime)
+        {
+            lineRenderer.enabled = true;
+            lineRenderer.positionCount = resolution;
+            Vector3[] points = new Vector3[resolution];
+
+            for (int i = 0; i < resolution; i++)
+            {
+                float time = i * timeStep;
+                
+                Vector3 movement = rig.linearVelocity * time + 0.5f * Physics.gravity * time * time;
+                points[i] = rig.position + movement;
+            }
+
+            lineRenderer.SetPositions(points);
+        } else
+        {
+            lineRenderer.enabled = false;
+        }
         
     }
 
@@ -101,9 +127,6 @@ public class PumpkinController : MonoBehaviour
         timeText.text = "Time\n" + ((int)(Time.timeAsDouble - startTime));
 
         Vector3 velocity = rig.linearVelocity;
-
-        // velocity.z *= forwardAirResistance;
-        
         
         velocity.x += moveInput.x * moveSpeed;
         velocity.x = Mathf.Clamp(velocity.x, -maxXSpeed, maxXSpeed);
@@ -154,17 +177,13 @@ public class PumpkinController : MonoBehaviour
             
             trampolineNumber++;
             // Debug.Log("Spawned trampoline #" + trampolineNumber);
-            Instantiate(trampoline, spawnPosition, Quaternion.identity);
+            GameObject obj = Instantiate(trampoline, spawnPosition, Quaternion.identity);
+            Destroy(obj, 20.0f);
 
             lastSpawnZ = rig.position.z;
         }
 
         IsGrounded();
-    }
-
-    public void OnShootInput (InputAction.CallbackContext context)
-    {
-        // shootInput = context.ReadValueAsButton();
     }
 
     public void OnMoveInput (InputAction.CallbackContext context)
@@ -214,10 +233,12 @@ public class PumpkinController : MonoBehaviour
                 //bounce
                 rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
                 rig.AddForce(new Vector3(0, 1, 1) * 60, ForceMode.VelocityChange);
+                bottomText.AddText("Bounced on trampoline!");
             } else
             {
                 //hit ground :(
                 grounded = true;
+                bottomText.AddText("Landed on ground :(");
             }
         }
     }
@@ -229,49 +250,57 @@ public class PumpkinController : MonoBehaviour
             case Skill.Jump:
                 if (Time.time >= jumpCooldown)
                 {
-                   SkillJump(); 
+                    bottomText.AddText("Activated Jump!");
+                    SkillJump(); 
                 }
                 break;
             case Skill.Arrow:
                 if (Time.time >= arrowCooldown)
                 {
-                   SkillArrow(); 
+                    bottomText.AddText("Activated Arrow!");
+                    SkillArrow(); 
                 }
                 break;
             case Skill.Magnet:
                 if (Time.time >= magnetCooldown)
                 {
-                   SkillMagnet(); 
+                    bottomText.AddText("Activated Magnet!");
+                    SkillMagnet(); 
                 }
                 break;
             case Skill.Split:
                 if (Time.time >= splitCooldown)
                 {
-                   SkillSplit(); 
+                    bottomText.AddText("Activated Split!");
+                    SkillSplit(); 
                 }
                 break;
             case Skill.Hover:
                 if (Time.time >= hoverCooldown)
                 {
-                   SkillHover();
+                    bottomText.AddText("Activated Hover!");
+                    SkillHover();
                 }
                 break;
             case Skill.Speed:
                 if (Time.time >= speedCooldown)
                 {
-                   SkillSpeed(); 
+                    bottomText.AddText("Activated Speed!");
+                    SkillSpeed(); 
                 }
                 break;
             case Skill.Fire:
                 if (Time.time >= fireCooldown)
                 {
-                   SkillFire(); 
+                    bottomText.AddText("Activated Fire!");
+                    SkillFire(); 
                 }
                 break;
             case Skill.Explode:
                 if (Time.time >= explodeCooldown)
                 {
-                   SkillExplode(); 
+                    bottomText.AddText("Activated Explode!");
+                    SkillExplode(); 
                 }
                 break;
         }
@@ -288,6 +317,7 @@ public class PumpkinController : MonoBehaviour
     {
         // implement arrow
         arrowTime = Time.time + 20f;
+        arrowCooldown = Time.time + 30f;
     }
 
     private void SkillMagnet()

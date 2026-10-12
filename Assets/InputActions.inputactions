@@ -7,16 +7,6 @@
             "id": "ca08107d-9940-4528-a50c-ab1376e7437e",
             "actions": [
                 {
-                    "name": "Shoot",
-                    "type": "Button",
-                    "id": "81ea26c2-0b6c-4ada-97de-241a127852a8",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
-                },
-                {
                     "name": "Move",
                     "type": "Value",
                     "id": "2e6faedc-fc45-48c3-8cd4-06f596e15a6f",
@@ -68,17 +58,6 @@
                 }
             ],
             "bindings": [
-                {
-                    "name": "",
-                    "id": "de272230-382b-426e-8972-d6cd365e3409",
-                    "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Shoot",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
                 {
                     "name": "2D Vector",
                     "id": "48d899fe-20cb-4e77-a703-fb47c2944c34",
