@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using UnityEditor;
 
 [RequireComponent(typeof(Rigidbody))]
 
@@ -23,7 +24,9 @@ public class PumpkinController : MonoBehaviour
     [SerializeField]
     private float maxXSpeed;
     [SerializeField]
-    private float maxFallSpeed = 50f;
+    private float forwardAirResistance = 0.99f;
+    [SerializeField]
+    private float maxFallSpeed = 100f;
     [SerializeField]
     private TMP_Text heightText;
     [SerializeField]
@@ -58,6 +61,13 @@ public class PumpkinController : MonoBehaviour
     private bool grounded = false;
     private Rigidbody rig;
 
+
+    [SerializeField]
+    private GameObject trampoline;
+    private float nextSpawnThreshold = 10f;
+    private float spawnInterval = 10f;
+    private float lastSpawnZ;
+    private int trampolineNumber = 0;
     void Awake()
     {
         rig = GetComponent<Rigidbody>();
@@ -69,13 +79,14 @@ public class PumpkinController : MonoBehaviour
         heightText.text = "Height\n0";
         distanceText.text = "Distance\n0";
         timeText.text = "Time\n0";
+        lastSpawnZ = rig.position.z;
     }
 
     // Update is called once per frame
-    // void Update()
-    // {
-
-    // }
+    void Update()
+    {
+        
+    }
 
     void FixedUpdate ()
     {
@@ -91,6 +102,9 @@ public class PumpkinController : MonoBehaviour
 
         Vector3 velocity = rig.linearVelocity;
 
+        // velocity.z *= forwardAirResistance;
+        
+        
         velocity.x += moveInput.x * moveSpeed;
         velocity.x = Mathf.Clamp(velocity.x, -maxXSpeed, maxXSpeed);
 
@@ -107,6 +121,8 @@ public class PumpkinController : MonoBehaviour
         transform.Rotate(velocity);
 
         rig.linearVelocity = velocity;
+
+        rig.AddForce(Vector3.back * forwardAirResistance, ForceMode.Force);
 
         if (leftInput)
         {
@@ -126,6 +142,21 @@ public class PumpkinController : MonoBehaviour
         if (downInput)
         {
             CallSkill(downSkill);
+        }
+
+        if (rig.position.z > lastSpawnZ + spawnInterval)
+        {
+            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-50f, 10f), rig.position.z + 100f);
+            if (spawnPosition.y <= 0)
+            {
+                spawnPosition.y = 1;
+            }
+            
+            trampolineNumber++;
+            // Debug.Log("Spawned trampoline #" + trampolineNumber);
+            Instantiate(trampoline, spawnPosition, Quaternion.identity);
+
+            lastSpawnZ = rig.position.z;
         }
 
         IsGrounded();
@@ -172,9 +203,22 @@ public class PumpkinController : MonoBehaviour
 
     void IsGrounded ()
     {
-        if(Physics.Raycast(transform.position + new Vector3(0, 0.1f, 0), Vector3.down, 0.6f))
+        Ray ray = new Ray(transform.position + new Vector3(0, 0.1f, 0), Vector3.down);
+        RaycastHit hit;
+        if(Physics.Raycast(ray, out hit, 0.6f))
         {
-            grounded = true;
+            GameObject hitObject = hit.collider.gameObject;
+            Debug.Log("Hit!: " + hitObject.name);
+            if (hitObject.CompareTag("Trampoline"))
+            {
+                //bounce
+                rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
+                rig.AddForce(new Vector3(0, 1, 1) * 60, ForceMode.VelocityChange);
+            } else
+            {
+                //hit ground :(
+                grounded = true;
+            }
         }
     }
 
@@ -186,10 +230,6 @@ public class PumpkinController : MonoBehaviour
                 if (Time.time >= jumpCooldown)
                 {
                    SkillJump(); 
-                } else
-                {
-                    Debug.Log("It is: " + Time.time);
-                    Debug.Log("Can't jump! Not until: " + jumpCooldown);
                 }
                 break;
             case Skill.Arrow:
@@ -240,8 +280,8 @@ public class PumpkinController : MonoBehaviour
     private void SkillJump()
     {
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
-        rig.AddForce(new Vector3(0, 1, 1) * 40, ForceMode.VelocityChange);
-        jumpCooldown = Time.time + 1.5f;
+        rig.AddForce(new Vector3(0, 2, 1) * 30, ForceMode.VelocityChange);
+        jumpCooldown = Time.time + 2.5f;
     }
 
     private void SkillArrow()
