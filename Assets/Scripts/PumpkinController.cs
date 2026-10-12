@@ -1,23 +1,51 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using System.Collections.Generic;
+using UnityEngine.UI;
+
+public enum Skill
+{ 
+    Jump,
+    Arrow,
+    Magnet,
+    Split,
+    Hover,
+    Speed,
+    Fire,
+    Explode
+}
+
+public enum Key
+{ 
+    Left,
+    Up,
+    Right,
+    Down
+}
+
+public class SkillKey
+{
+    public Key key;
+    public Skill skill;
+    public float startCooldown;
+    public float endCooldown;
+    public Image fillReference;
+
+    public SkillKey(Key key, Skill skill, Image fillReference)
+    {
+        this.key = key;
+        this.skill = skill;
+        startCooldown = 0;
+        endCooldown = 0;
+        this.fillReference = fillReference;
+    }
+}
 
 [RequireComponent(typeof(Rigidbody))]
 
 public class PumpkinController : MonoBehaviour
 {
-    public enum Skill
-    { 
-        Jump,
-        Arrow,
-        Magnet,
-        Split,
-        Hover,
-        Speed,
-        Fire,
-        Explode
-    }
-
     [SerializeField]
     private float moveSpeed;
     [SerializeField]
@@ -38,26 +66,43 @@ public class PumpkinController : MonoBehaviour
     private Vector2 moveInput;
     private bool shootInput;
     private bool leftInput;
-    private Skill? leftSkill = Skill.Hover;
+    private SkillKey leftSkill;
+    [SerializeField]
+    private Image leftFillReference;
     private bool upInput;
-    private Skill? upSkill = Skill.Jump;
+    private SkillKey upSkill;
+    [SerializeField]
+    private Image upFillReference;
     private bool rightInput;
-    private Skill? rightSkill = Skill.Arrow;
+    private SkillKey rightSkill;
+    [SerializeField]
+    private Image rightFillReference;
     private bool downInput;
-    private Skill? downSkill = Skill.Explode;
-    private float jumpCooldown = 0f;
+    private SkillKey downSkill;
+    [SerializeField]
+    private Image downFillReference;
+    private List<SkillKey> skillKeyList = new List<SkillKey>();
+    [SerializeField]
+    private float jumpCooldown = 2.5f;
+    [SerializeField]
     private float arrowCooldown = 0f;
     private float arrowTime = 0f;
+    [SerializeField]
     private float magnetCooldown = 0f;
     private float magnetTime = 0f;
+    [SerializeField]
     private float splitCooldown = 0f;
+    [SerializeField]
     private float hoverCooldown = 0f;
     private float hoverTime = 0f;
+    [SerializeField]
     private float speedCooldown = 0f;
     private float speedTime = 0f;
+    [SerializeField]
     private float fireCooldown = 0f;
     private float fireTime = 0f;
-    private float explodeCooldown = 0f;
+    [SerializeField]
+    private float explodeCooldown = 30f;
     private bool hasShot = false;
     private bool grounded = false;
     private Rigidbody rig;
@@ -87,6 +132,30 @@ public class PumpkinController : MonoBehaviour
         distanceText.text = "Distance\n0";
         timeText.text = "Time\n0";
         lastSpawnZ = rig.position.z;
+        leftSkill = new SkillKey(
+            Key.Left,
+            Skill.Hover,
+            leftFillReference
+        );
+        upSkill = new SkillKey(
+            Key.Up,
+            Skill.Jump,
+            upFillReference
+        );
+        rightSkill = new SkillKey(
+            Key.Right,
+            Skill.Arrow,
+            rightFillReference
+        );
+        downSkill = new SkillKey(
+            Key.Down,
+            Skill.Explode,
+            downFillReference
+        );
+        skillKeyList.Add(leftSkill);
+        skillKeyList.Add(upSkill);
+        skillKeyList.Add(rightSkill);
+        skillKeyList.Add(downSkill);
     }
 
     // Update is called once per frame
@@ -110,6 +179,20 @@ public class PumpkinController : MonoBehaviour
         } else
         {
             lineRenderer.enabled = false;
+        }
+
+        foreach (SkillKey skillKey in skillKeyList)
+        {
+            float now = Time.time;
+            if (now < skillKey.endCooldown)
+            {
+                float greyFill = Mathf.Clamp01((now - skillKey.startCooldown)/(skillKey.endCooldown - skillKey.startCooldown));
+                greyFill = 1 - greyFill;
+                skillKey.fillReference.fillAmount = greyFill;
+            } else
+            {
+                skillKey.fillReference.fillAmount = 0;
+            }
         }
         
     }
@@ -147,22 +230,22 @@ public class PumpkinController : MonoBehaviour
 
         rig.AddForce(Vector3.back * forwardAirResistance, ForceMode.Force);
 
-        if (leftInput)
+        if (leftInput && Time.time >= leftSkill.endCooldown)
         {
             CallSkill(leftSkill);
         }
 
-        if (upInput)
+        if (upInput && Time.time >= upSkill.endCooldown)
         {
             CallSkill(upSkill);
         }
 
-        if (rightInput)
+        if (rightInput && Time.time >= rightSkill.endCooldown)
         {
             CallSkill(rightSkill);
         }
 
-        if (downInput)
+        if (downInput && Time.time >= downSkill.endCooldown)
         {
             CallSkill(downSkill);
         }
@@ -243,116 +326,100 @@ public class PumpkinController : MonoBehaviour
         }
     }
 
-    private void CallSkill(Skill? skill)
+    private void CallSkill(SkillKey skillKey)
     {
-        switch (skill)
+        switch (skillKey.skill)
         {
             case Skill.Jump:
-                if (Time.time >= jumpCooldown)
-                {
-                    bottomText.AddText("Activated Jump!");
-                    SkillJump(); 
-                }
+                bottomText.AddText("Activated Jump!");
+                SkillJump(skillKey);
                 break;
             case Skill.Arrow:
-                if (Time.time >= arrowCooldown)
-                {
-                    bottomText.AddText("Activated Arrow!");
-                    SkillArrow(); 
-                }
+                bottomText.AddText("Activated Arrow!");
+                SkillArrow(skillKey);
                 break;
             case Skill.Magnet:
-                if (Time.time >= magnetCooldown)
-                {
-                    bottomText.AddText("Activated Magnet!");
-                    SkillMagnet(); 
-                }
+                bottomText.AddText("Activated Magnet!");
+                SkillMagnet(skillKey);
                 break;
             case Skill.Split:
-                if (Time.time >= splitCooldown)
-                {
-                    bottomText.AddText("Activated Split!");
-                    SkillSplit(); 
-                }
+                bottomText.AddText("Activated Split!");
+                SkillSplit(skillKey);
                 break;
             case Skill.Hover:
-                if (Time.time >= hoverCooldown)
-                {
-                    bottomText.AddText("Activated Hover!");
-                    SkillHover();
-                }
+                bottomText.AddText("Activated Hover!");
+                SkillHover(skillKey);
                 break;
             case Skill.Speed:
-                if (Time.time >= speedCooldown)
-                {
-                    bottomText.AddText("Activated Speed!");
-                    SkillSpeed(); 
-                }
+                bottomText.AddText("Activated Speed!");
+                SkillSpeed(skillKey);
                 break;
             case Skill.Fire:
-                if (Time.time >= fireCooldown)
-                {
-                    bottomText.AddText("Activated Fire!");
-                    SkillFire(); 
-                }
+                bottomText.AddText("Activated Fire!");
+                SkillFire(skillKey);
                 break;
             case Skill.Explode:
-                if (Time.time >= explodeCooldown)
-                {
-                    bottomText.AddText("Activated Explode!");
-                    SkillExplode(); 
-                }
+                bottomText.AddText("Activated Explode!");
+                SkillExplode(skillKey);
                 break;
         }
+        skillKey.startCooldown = Time.time;
     }
 
-    private void SkillJump()
+    private void SkillJump(SkillKey skillKey)
     {
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
         rig.AddForce(new Vector3(0, 2, 1) * 30, ForceMode.VelocityChange);
-        jumpCooldown = Time.time + 2.5f;
+        skillKey.endCooldown = Time.time + jumpCooldown;
     }
 
-    private void SkillArrow()
+    private void SkillArrow(SkillKey skillKey)
     {
         // implement arrow
         arrowTime = Time.time + 20f;
-        arrowCooldown = Time.time + 30f;
+        skillKey.endCooldown = Time.time + arrowCooldown;
+        // arrowCooldown = Time.time + 30f;
     }
 
-    private void SkillMagnet()
+    private void SkillMagnet(SkillKey skillKey)
     {
         // implement magnet
         magnetTime = Time.time + 20f;
+        skillKey.endCooldown = Time.time + magnetCooldown;
     }
 
-    private void SkillSplit()
+    private void SkillSplit(SkillKey skillKey)
     {
         // implement split
-        splitCooldown = Time.time + 20f;
+        // splitCooldown = Time.time + 20f;
+        skillKey.endCooldown = Time.time + splitCooldown;
     }
 
-    private void SkillHover()
+    private void SkillHover(SkillKey skillKey)
     {
         hoverTime = Time.time + 5f;
-        hoverCooldown = Time.time + 10f;
+        // hoverCooldown = Time.time + 10f;
+        skillKey.endCooldown = Time.time + hoverCooldown;
     }
 
-    private void SkillSpeed()
+    private void SkillSpeed(SkillKey skillKey)
     {
         // implement speed
         speedTime = Time.time + 20f;
+        skillKey.endCooldown = Time.time + speedCooldown;
     }
 
-    private void SkillFire()
+    private void SkillFire(SkillKey skillKey)
     {
         // implement fire
         fireTime = Time.time + 20f;
+        skillKey.endCooldown = Time.time + fireCooldown;
     }
 
-    private void SkillExplode()
+    private void SkillExplode(SkillKey skillKey)
     {
         rig.AddForce(new Vector3(0, 1, 0) * 200, ForceMode.VelocityChange);
-        explodeCooldown = Time.time + 20f;
+        // explodeCooldown = Time.time + 20f;
+        skillKey.endCooldown = Time.time + explodeCooldown;
     }
 }

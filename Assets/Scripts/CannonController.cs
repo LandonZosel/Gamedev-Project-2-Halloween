@@ -65,7 +65,7 @@ public class CannonController : MonoBehaviour
                 shootPolarity = 1;
             }
 
-            currentPowerFill = (shootForce-10)/50;
+            currentPowerFill = Mathf.Clamp01((shootForce-10)/50);
             UpdatePowerBar();
         } else if (!shot)
         {
