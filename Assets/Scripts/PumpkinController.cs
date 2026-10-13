@@ -303,6 +303,14 @@ public class PumpkinController : MonoBehaviour
         rig.useGravity = true;
     }
 
+    public void Trampoline()
+    {
+        //bounce
+        rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
+        rig.AddForce(new Vector3(0, 2, 1) * 60, ForceMode.VelocityChange);
+        bottomText.AddText("Bounced on trampoline!");
+    }
+
     void IsGrounded ()
     {
         Ray ray = new Ray(transform.position + new Vector3(0, 0.1f, 0), Vector3.down);
@@ -310,14 +318,7 @@ public class PumpkinController : MonoBehaviour
         if(Physics.Raycast(ray, out hit, 0.6f))
         {
             GameObject hitObject = hit.collider.gameObject;
-            Debug.Log("Hit!: " + hitObject.name);
-            if (hitObject.CompareTag("Trampoline"))
-            {
-                //bounce
-                rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
-                rig.AddForce(new Vector3(0, 1, 1) * 60, ForceMode.VelocityChange);
-                bottomText.AddText("Bounced on trampoline!");
-            } else
+            if (hitObject.CompareTag("Plane"))
             {
                 //hit ground :(
                 grounded = true;
