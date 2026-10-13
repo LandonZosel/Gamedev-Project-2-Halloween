@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public enum Skill
 { 
@@ -64,7 +65,7 @@ public class PumpkinController : MonoBehaviour
     private BottomTextController bottomText;
     private double startTime;
     private Vector2 moveInput;
-    private bool shootInput;
+    private bool spaceInput;
     private bool leftInput;
     private SkillKey leftSkill;
     [SerializeField]
@@ -269,9 +270,22 @@ public class PumpkinController : MonoBehaviour
         IsGrounded();
     }
 
+    public void OnSpaceInput (InputAction.CallbackContext context)
+    {
+        // spaceInput = context.ReadValueAsButton();
+        if (grounded)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+    }
+
     public void OnMoveInput (InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
+    }
+    public void OnExitInput ()
+    {
+        Application.Quit();
     }
 
     public void OnLeftInput (InputAction.CallbackContext context)
@@ -296,7 +310,6 @@ public class PumpkinController : MonoBehaviour
 
     public void Shoot (float shootForce)
     {
-        shootInput = false;
         hasShot = true;
         startTime = Time.timeAsDouble;
         rig.AddForce(transform.up * shootForce, ForceMode.VelocityChange);
@@ -322,7 +335,7 @@ public class PumpkinController : MonoBehaviour
             {
                 //hit ground :(
                 grounded = true;
-                bottomText.AddText("Landed on ground :(");
+                bottomText.AddText("Landed on ground :(\nPress Space to restart");
             }
         }
     }
