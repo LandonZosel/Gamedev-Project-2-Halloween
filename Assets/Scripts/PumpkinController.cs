@@ -308,7 +308,7 @@ public class PumpkinController : MonoBehaviour
         //bounce
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
         rig.AddForce(new Vector3(0, 2, 1) * 60, ForceMode.VelocityChange);
-        bottomText.AddText("Bounced on trampoline!");
+        bottomText.AddTrampolineText();
     }
 
     void IsGrounded ()
