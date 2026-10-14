@@ -31,19 +31,27 @@ public class PumpkinController : MonoBehaviour
     private bool leftInput;
     private SkillKey leftSkill;
     [SerializeField]
+    private Image leftSkillReference;
+    [SerializeField]
     private Image leftFillReference;
     private bool upInput;
     private SkillKey upSkill;
     [SerializeField]
+    private Image upSkillReference;
+    [SerializeField]
     private Image upFillReference;
     private bool rightInput;
     private SkillKey rightSkill;
+    [SerializeField]
+    private Image rightSkillReference;
     [SerializeField]
     private Image rightFillReference;
     private bool downInput;
     private SkillKey downSkill;
     [SerializeField]
     private Image downFillReference;
+    [SerializeField]
+    private Image downSkillReference;
     private List<SkillKey> skillKeyList = new List<SkillKey>();
     [SerializeField]
     private float jumpCooldown = 2.5f;
@@ -98,27 +106,37 @@ public class PumpkinController : MonoBehaviour
         leftSkill = new SkillKey(
             Key.Left,
             Skill.Hover,
+            "hover_skill",
             leftFillReference
         );
         upSkill = new SkillKey(
             Key.Up,
             Skill.Jump,
+            "jump_skill",
             upFillReference
         );
         rightSkill = new SkillKey(
             Key.Right,
             Skill.Arrow,
+            "arrow_skill",
             rightFillReference
         );
         downSkill = new SkillKey(
             Key.Down,
             Skill.Explode,
+            "explode_skill",
             downFillReference
         );
+
         skillKeyList.Add(leftSkill);
         skillKeyList.Add(upSkill);
         skillKeyList.Add(rightSkill);
         skillKeyList.Add(downSkill);
+
+        leftSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + leftSkill.imageFileName);
+        upSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + upSkill.imageFileName);
+        rightSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + rightSkill.imageFileName);
+        downSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + downSkill.imageFileName);
     }
 
     // Update is called once per frame

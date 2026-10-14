@@ -470,7 +470,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -7363420839742668684, guid: 6f9f18b7817ad30409a8813d6205ce57, type: 3}
+  m_Sprite: {fileID: 3218888648985810401, guid: 4e75a9da53eed394dbe9d24fede3351c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -810,7 +810,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 8773931670262691789, guid: 95ad252e4088a0349ae2b6be95103e00, type: 3}
+  m_Sprite: {fileID: 3218888648985810401, guid: 4e75a9da53eed394dbe9d24fede3351c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -976,7 +976,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 6925379207755261017, guid: 107c49bc2d5d574498b068a9339a8ab5, type: 3}
+  m_Sprite: {fileID: 3218888648985810401, guid: 4e75a9da53eed394dbe9d24fede3351c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1434,14 +1434,18 @@ MonoBehaviour:
   distanceText: {fileID: 137790231}
   timeText: {fileID: 1698967567}
   bottomText: {fileID: 1864950212}
+  leftSkillReference: {fileID: 526543003}
   leftFillReference: {fileID: 1602564358}
+  upSkillReference: {fileID: 518597042}
   upFillReference: {fileID: 908412344}
+  rightSkillReference: {fileID: 2133433689}
   rightFillReference: {fileID: 146443597}
   downFillReference: {fileID: 1598332806}
+  downSkillReference: {fileID: 214546968}
   jumpCooldown: 2.5
   arrowCooldown: 30
   magnetCooldown: 0
-  splitCooldown: 0
+  gravityFlipCooldown: 0
   hoverCooldown: 20
   speedCooldown: 0
   fireCooldown: 0
@@ -3104,7 +3108,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -4805342625145256845, guid: 1368c19b66f992e468b0fd1a9a08feaa, type: 3}
+  m_Sprite: {fileID: 3218888648985810401, guid: 4e75a9da53eed394dbe9d24fede3351c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework.Internal.Commands;
+using TMPro;
 using UnityEditor.Rendering.Universal;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,10 +13,36 @@ public class ShopController : MonoBehaviour, ISaveSystem
     private List<Button> upgradeButtons;
     [SerializeField] 
     private List<Button> skillButtons;
+    [SerializeField] 
+    private Button purchaseButton;
+    [SerializeField] 
+    private TMP_Text purchaseButtonText;
+    [SerializeField] 
+    private Button setSkillButton;
+    [SerializeField] 
+    private TMP_Text titleText;
+    [SerializeField] 
+    private TMP_Text subTitleText;
+    [SerializeField] 
+    private TMP_Text effectText;
+    [SerializeField] 
+    private Image skillImage;
+    [SerializeField] 
+    private Button leftSkillButton;
+    [SerializeField] 
+    private Button upSkillButton;
+    [SerializeField] 
+    private Button rightSkillButton;
+    [SerializeField] 
+    private Button downSkillButton;
+    [SerializeField] 
+    private TMP_Text moneyText;
     [SerializeField]
     private SaveSystem saveSystem;
     private List<SkillButton> skills = new List<SkillButton>();
+    private SkillButton selectedSkill;
     private List<UpgradeButton> upgrades = new List<UpgradeButton>();
+    private UpgradeButton selectedUpgrade;
     private int dayCount;
     private int money;
     
@@ -27,6 +56,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         skillButtons[(int)Skill.Fire].onClick.AddListener(() => SkillButtonPressed(Skill.Fire));
         skillButtons[(int)Skill.Arrow].onClick.AddListener(() => SkillButtonPressed(Skill.Arrow));
         skillButtons[(int)Skill.GravityFlip].onClick.AddListener(() => SkillButtonPressed(Skill.GravityFlip));
+
         upgradeButtons[(int)Upgrade.C1].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.C1));
         upgradeButtons[(int)Upgrade.C2].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.C2));
         upgradeButtons[(int)Upgrade.C3].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.C3));
@@ -63,6 +93,18 @@ public class ShopController : MonoBehaviour, ISaveSystem
         upgradeButtons[(int)Upgrade.GravityFlip1].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.GravityFlip1));
         upgradeButtons[(int)Upgrade.GravityFlip2].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.GravityFlip2));
         upgradeButtons[(int)Upgrade.GravityFlip3].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.GravityFlip3));
+
+        leftSkillButton.onClick.AddListener(() => OnSkillButton(Key.Left));
+        upSkillButton.onClick.AddListener(() => OnSkillButton(Key.Up));
+        rightSkillButton.onClick.AddListener(() => OnSkillButton(Key.Right));
+        downSkillButton.onClick.AddListener(() => OnSkillButton(Key.Down));
+
+        purchaseButton.gameObject.SetActive(false);
+        setSkillButton.gameObject.SetActive(false);
+        titleText.gameObject.SetActive(false);
+        subTitleText.gameObject.SetActive(false);
+        effectText.gameObject.SetActive(false);
+        skillImage.gameObject.SetActive(false);
     }
 
     void Awake()
@@ -79,13 +121,30 @@ public class ShopController : MonoBehaviour, ISaveSystem
     public void SkillButtonPressed(Skill skill)
     {
         Debug.Log(skill.ToString() + " Button Pressed!");
-        dayCount++;
-        if (skills[(int)skill].purchased)
+        Debug.Log((int)skill + " has this int!");
+
+        UpdateSkillButtonState(false);
+
+        selectedSkill = skills[(int)skill];
+        selectedUpgrade = null;
+        skillImage.gameObject.SetActive(true);
+        skillImage.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+        if (selectedSkill.purchased)
         {
+            //reveal set button and hide purchase button
+            purchaseButton.gameObject.SetActive(false);
+            setSkillButton.gameObject.SetActive(true);
             //switch text
-        } else if (skills[(int)skill].available)
+            SwitchSkillText();
+        } else if (selectedSkill.available)
         {
-            //switch text but make purchase button available
+            //reveal purchase button
+            purchaseButton.gameObject.SetActive(true);
+            setSkillButton.gameObject.SetActive(false);
+            purchaseButton.interactable = selectedSkill.cost <= money;
+            purchaseButtonText.text = "Purchase";
+            //switch text
+            SwitchSkillText();
         }
         
     }
@@ -93,13 +152,71 @@ public class ShopController : MonoBehaviour, ISaveSystem
     public void UpgradeButtonPressed(Upgrade upgrade)
     {
         Debug.Log(upgrade.ToString() + " Button Pressed!");
-        if (upgrades[(int)upgrade].purchased)
+
+        UpdateSkillButtonState(false);
+
+        selectedUpgrade = upgrades[(int)upgrade];
+        selectedSkill = null;
+        //reveal purchase button and hide set button
+        purchaseButton.gameObject.SetActive(true);
+        setSkillButton.gameObject.SetActive(false);
+        skillImage.gameObject.SetActive(false);
+        if (selectedUpgrade.purchased)
         {
+            //switch purchase button text and make not interactable
+            purchaseButton.interactable = false;
+            purchaseButtonText.text = "Purchased";
             //switch text
-        } else if (upgrades[(int)upgrade].available)
+            SwitchUpgradeText();
+        } else if (selectedUpgrade.available)
         {
-            //switch text but make purchase button available
+            //switch purchase button text and make interactable
+            purchaseButton.interactable = selectedUpgrade.cost <= money;
+            purchaseButtonText.text = "Purchase";
+            //switch text
+            SwitchUpgradeText();
         }
+    }
+
+    public void SwitchSkillText()
+    {
+        SwitchTitleText(selectedSkill.title);
+        SwitchSubTitleText(selectedSkill.subTitle);
+        SwitchEffectText(selectedSkill.effect);
+    }
+
+    public void SwitchUpgradeText()
+    {
+        SwitchTitleText(selectedUpgrade.title);
+        SwitchSubTitleText(selectedUpgrade.subTitle);
+        SwitchEffectText(selectedUpgrade.effect);
+    }
+
+    public void SwitchTitleText(string text)
+    {
+        if (!titleText.IsActive())
+        {
+            titleText.gameObject.SetActive(true);
+        }
+        titleText.text = text;
+    }
+
+    public void SwitchSubTitleText(string text)
+    {
+        if (!subTitleText.IsActive())
+        {
+            subTitleText.gameObject.SetActive(true);
+        }
+        subTitleText.text = text;
+    }
+
+    public void SwitchEffectText(string text)
+    {
+        if (!effectText.IsActive())
+        {
+            effectText.gameObject.SetActive(true);
+        }
+        effectText.text = text;
     }
 
     public void PlayButton()
@@ -107,6 +224,227 @@ public class ShopController : MonoBehaviour, ISaveSystem
         //TODO change to load new day with settings
         dayCount++;
         SceneManager.LoadScene("Game");
+    }
+
+    public void PurchaseButton()
+    {
+        if (selectedSkill != null)
+        {
+            PurchaseSkill();
+        } else if (selectedUpgrade != null)
+        {
+            PurchaseUpgrade();
+        }
+    }
+
+    public void PurchaseSkill()
+    {
+        //TODO purchase currently selected skill if enough money
+        if (selectedSkill.cost <= money)
+        {
+            money -= selectedSkill.cost;
+            SetMoneyText();
+            selectedSkill.purchased = true;
+            //change button to set button
+            purchaseButton.gameObject.SetActive(false);
+            setSkillButton.gameObject.SetActive(true);
+
+            //set new purchased colors
+            ColorBlock cb = skillButtons[(int)selectedSkill.skill].colors;
+            cb.normalColor = Color.green;
+            cb.highlightedColor = Color.greenYellow;
+            cb.pressedColor = Color.green;
+            skillButtons[(int)selectedSkill.skill].colors = cb;
+
+            //activate future upgrade
+            upgrades[(int)selectedSkill.onPurchaseUpgradeUnlock].available = true;
+            upgradeButtons[(int)selectedSkill.onPurchaseUpgradeUnlock].interactable = true;
+        }
+
+        
+    }
+
+    public void PurchaseUpgrade()
+    {
+        //TODO purchase currently selected upgrade if enough money
+        if (selectedUpgrade.cost <= money)
+        {
+            money -= selectedUpgrade.cost;
+            SetMoneyText();
+            selectedUpgrade.purchased = true;
+
+            //change purchase button to purchased and inactive
+            purchaseButton.interactable = false;
+            purchaseButtonText.text = "Purchased";
+
+            //set new purchased colors
+            ColorBlock cb = upgradeButtons[(int)selectedUpgrade.upgrade].colors;
+            cb.normalColor = Color.green;
+            cb.highlightedColor = Color.greenYellow;
+            cb.pressedColor = Color.green;
+            upgradeButtons[(int)selectedUpgrade.upgrade].colors = cb;
+
+            //activate future upgrades
+            for (int i = 0; i < selectedUpgrade.onPurchaseUpgradeUnlocks.Count; i++)
+            {
+                if (selectedUpgrade.onPurchaseUpgradeUnlocks[i] == Upgrade.G1)
+                {
+                    if (upgrades[(int)Upgrade.GravityFlip3].purchased
+                    && upgrades[(int)Upgrade.Explode3].purchased
+                    && upgrades[(int)Upgrade.Magnet3].purchased)
+                    {
+                        upgrades[(int)selectedUpgrade.onPurchaseUpgradeUnlocks[i]].available = true;
+                        upgradeButtons[(int)selectedUpgrade.onPurchaseUpgradeUnlocks[i]].interactable = true;
+                    }
+                } else
+                {
+                    upgrades[(int)selectedUpgrade.onPurchaseUpgradeUnlocks[i]].available = true;
+                    upgradeButtons[(int)selectedUpgrade.onPurchaseUpgradeUnlocks[i]].interactable = true;
+                }
+                
+            }
+
+            //activate future skill
+            skills[(int)selectedUpgrade.onPurchaseSkillUnlock].available = true;
+            skillButtons[(int)selectedUpgrade.onPurchaseSkillUnlock].interactable = true;
+        }
+    }
+
+    public void SetMoneyText()
+    {
+        moneyText.text = "Money:\n$" + money;
+    }
+
+    public void SetSkillButton()
+    {
+        if (selectedSkill != null)
+        {
+            UpdateSkillButtonState(true);
+        }
+    }
+
+    public void OnSkillButton(Key newKey)
+    {
+        if (selectedSkill != null)
+        {
+            if (selectedSkill.keyAssigned == Key.None)
+            {
+                selectedSkill.keyAssigned = newKey;
+                switch (newKey)
+                {
+                    case Key.Left:
+                        leftSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                        break;
+                    case Key.Up:
+                        upSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                        break;
+                    case Key.Right:
+                        rightSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                        break;
+                    case Key.Down:
+                        downSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                        break;
+                }
+                
+            } else if (selectedSkill.keyAssigned != newKey)
+            {
+                //need to swap sprites
+                Key oldKey = selectedSkill.keyAssigned;
+                SkillButton oldSkill = null;
+
+                foreach(SkillButton skill in skills)
+                {
+                    if (skill.keyAssigned == newKey)
+                    {
+                        oldSkill = skill;
+                        break;
+                    }
+                }
+
+                if (oldSkill == null)
+                {
+                    //no old skill, need to just remove and add
+                    switch (oldKey)
+                    {
+                        case Key.Left:
+                            leftSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/empty_skill");
+                            break;
+                        case Key.Up:
+                            upSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/empty_skill");
+                            break;
+                        case Key.Right:
+                            rightSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/empty_skill");
+                            break;
+                        case Key.Down:
+                            downSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/empty_skill");
+                            break;
+                    }
+
+                    selectedSkill.keyAssigned = newKey;
+                    switch (newKey)
+                    {
+                        case Key.Left:
+                            leftSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                        case Key.Up:
+                            upSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                        case Key.Right:
+                            rightSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                        case Key.Down:
+                            downSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                    }
+                } else
+                {
+                    //swap skills
+                    oldSkill.keyAssigned = oldKey;
+                    switch (oldKey)
+                    {
+                        case Key.Left:
+                            leftSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + oldSkill.imageFileName);
+                            break;
+                        case Key.Up:
+                            upSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + oldSkill.imageFileName);
+                            break;
+                        case Key.Right:
+                            rightSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + oldSkill.imageFileName);
+                            break;
+                        case Key.Down:
+                            downSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + oldSkill.imageFileName);
+                            break;
+                    }
+
+                    selectedSkill.keyAssigned = newKey;
+                    switch (newKey)
+                    {
+                        case Key.Left:
+                            leftSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                        case Key.Up:
+                            upSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                        case Key.Right:
+                            rightSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                        case Key.Down:
+                            downSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + selectedSkill.imageFileName);
+                            break;
+                    }
+                }
+
+            }
+        }
+        UpdateSkillButtonState(false);
+    }
+
+    public void UpdateSkillButtonState(bool state)
+    {
+        leftSkillButton.interactable = state;
+        upSkillButton.interactable = state;
+        rightSkillButton.interactable = state;
+        downSkillButton.interactable = state;
     }
 
     public void SaveAndQuitButton()
@@ -120,6 +458,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         Debug.Log("Loading data from shop controller");
         dayCount = data.dayCount;
         money = data.money;
+        SetMoneyText();
         skills = data.skills;
         upgrades = data.upgrades;
         for(int i = 0; i < skills.Count; i++)
@@ -128,45 +467,58 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
             if (current.purchased)
             {
-                Debug.Log(current.skill.ToString() + " is purchased!");
-                Debug.Log(skillButtons[i].ToString() + " is now interactable!");
                 skillButtons[i].interactable = true;
                 ColorBlock cb = skillButtons[i].colors;
                 cb.normalColor = Color.green;
+                cb.highlightedColor = Color.greenYellow;
+                cb.pressedColor = Color.green;
                 skillButtons[i].colors = cb;
             } else if (current.available)
             {
-                Debug.Log(current.skill.ToString() + " is available!");
-                Debug.Log(skillButtons[i].ToString() + " is now interactable!");
                 skillButtons[i].interactable = true;
             } else
             {
-                Debug.Log(current.skill.ToString() + " is not available.");
-                Debug.Log(skillButtons[i].ToString() + " is NOT interactable.");
                 skillButtons[i].interactable = false;
             }
+
+            //set skill images
+            if (current.keyAssigned != Key.None)
+            {
+                switch (current.keyAssigned)
+                {
+                    case Key.Left:
+                        leftSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + current.imageFileName);
+                        break;
+                    case Key.Up:
+                        upSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + current.imageFileName);
+                        break;
+                    case Key.Right:
+                        rightSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + current.imageFileName);
+                        break;
+                    case Key.Down:
+                        downSkillButton.image.sprite = Resources.Load<Sprite>("Sprites/" + current.imageFileName);
+                        break;
+                }
+            }
         }
+
         for(int i = 0; i < upgrades.Count; i++)
         {
             UpgradeButton current = upgrades[i];
 
             if (current.purchased)
             {
-                Debug.Log(current.upgrade.ToString() + " is purchased!");
-                Debug.Log(skillButtons[i].ToString() + " is now interactable!");
                 upgradeButtons[i].interactable = true;
                 ColorBlock cb = upgradeButtons[i].colors;
                 cb.normalColor = Color.green;
+                cb.highlightedColor = Color.greenYellow;
+                cb.pressedColor = Color.green;
                 upgradeButtons[i].colors = cb;
             } else if (current.available)
             {
-                Debug.Log(current.upgrade + " is available!");
-                Debug.Log(upgradeButtons[i].ToString() + " is now interactable!");
                 upgradeButtons[i].interactable = true;
             } else
             {
-                Debug.Log(current.upgrade.ToString() + " is not available.");
-                Debug.Log(upgradeButtons[i].ToString() + " is NOT interactable.");
                 upgradeButtons[i].interactable = false;
             }
         }
