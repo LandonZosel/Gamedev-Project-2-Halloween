@@ -94,6 +94,11 @@ public class ShopController : MonoBehaviour, ISaveSystem
         upgradeButtons[(int)Upgrade.GravityFlip2].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.GravityFlip2));
         upgradeButtons[(int)Upgrade.GravityFlip3].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.GravityFlip3));
 
+        leftSkillButton.image.alphaHitTestMinimumThreshold = 0.5f;
+        upSkillButton.image.alphaHitTestMinimumThreshold = 0.5f;
+        rightSkillButton.image.alphaHitTestMinimumThreshold = 0.5f;
+        downSkillButton.image.alphaHitTestMinimumThreshold = 0.5f;
+
         leftSkillButton.onClick.AddListener(() => OnSkillButton(Key.Left));
         upSkillButton.onClick.AddListener(() => OnSkillButton(Key.Up));
         rightSkillButton.onClick.AddListener(() => OnSkillButton(Key.Right));
@@ -120,9 +125,6 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void SkillButtonPressed(Skill skill)
     {
-        Debug.Log(skill.ToString() + " Button Pressed!");
-        Debug.Log((int)skill + " has this int!");
-
         UpdateSkillButtonState(false);
 
         selectedSkill = skills[(int)skill];
@@ -151,8 +153,6 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void UpgradeButtonPressed(Upgrade upgrade)
     {
-        Debug.Log(upgrade.ToString() + " Button Pressed!");
-
         UpdateSkillButtonState(false);
 
         selectedUpgrade = upgrades[(int)upgrade];
@@ -329,6 +329,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         {
             if (selectedSkill.keyAssigned == Key.None)
             {
+                Debug.Log("Assigning " + selectedSkill.skill + " to " + newKey);
                 selectedSkill.keyAssigned = newKey;
                 switch (newKey)
                 {
@@ -363,6 +364,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
                 if (oldSkill == null)
                 {
+                    Debug.Log("Removing " + selectedSkill.skill + " from " + oldKey + " and assigning to " + newKey);
                     //no old skill, need to just remove and add
                     switch (oldKey)
                     {
@@ -398,6 +400,8 @@ public class ShopController : MonoBehaviour, ISaveSystem
                     }
                 } else
                 {
+                    Debug.Log("Removing " + selectedSkill.skill + " from " + oldKey + " and assigning to " + newKey);
+                    Debug.Log(oldSkill.skill + " must go to " + oldKey);
                     //swap skills
                     oldSkill.keyAssigned = oldKey;
                     switch (oldKey)
