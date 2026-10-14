@@ -5,44 +5,6 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public enum Skill
-{ 
-    Jump,
-    Arrow,
-    Magnet,
-    Split,
-    Hover,
-    Speed,
-    Fire,
-    Explode
-}
-
-public enum Key
-{ 
-    Left,
-    Up,
-    Right,
-    Down
-}
-
-public class SkillKey
-{
-    public Key key;
-    public Skill skill;
-    public float startCooldown;
-    public float endCooldown;
-    public Image fillReference;
-
-    public SkillKey(Key key, Skill skill, Image fillReference)
-    {
-        this.key = key;
-        this.skill = skill;
-        startCooldown = 0;
-        endCooldown = 0;
-        this.fillReference = fillReference;
-    }
-}
-
 [RequireComponent(typeof(Rigidbody))]
 
 public class PumpkinController : MonoBehaviour
@@ -92,7 +54,7 @@ public class PumpkinController : MonoBehaviour
     private float magnetCooldown = 0f;
     private float magnetTime = 0f;
     [SerializeField]
-    private float splitCooldown = 0f;
+    private float gravityFlipCooldown = 0f;
     [SerializeField]
     private float hoverCooldown = 0f;
     private float hoverTime = 0f;
@@ -356,9 +318,9 @@ public class PumpkinController : MonoBehaviour
                 bottomText.AddText("Activated Magnet!");
                 SkillMagnet(skillKey);
                 break;
-            case Skill.Split:
-                bottomText.AddText("Activated Split!");
-                SkillSplit(skillKey);
+            case Skill.GravityFlip:
+                bottomText.AddText("Activated Gravity Flip!");
+                SkillGravityFlip(skillKey);
                 break;
             case Skill.Hover:
                 bottomText.AddText("Activated Hover!");
@@ -402,11 +364,11 @@ public class PumpkinController : MonoBehaviour
         skillKey.endCooldown = Time.time + magnetCooldown;
     }
 
-    private void SkillSplit(SkillKey skillKey)
+    private void SkillGravityFlip(SkillKey skillKey)
     {
-        // implement split
-        // splitCooldown = Time.time + 20f;
-        skillKey.endCooldown = Time.time + splitCooldown;
+        // implement gravity flip
+        // gravityFlipCooldown = Time.time + 20f;
+        skillKey.endCooldown = Time.time + gravityFlipCooldown;
     }
 
     private void SkillHover(SkillKey skillKey)
