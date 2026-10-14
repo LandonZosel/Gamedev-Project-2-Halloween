@@ -11,6 +11,7 @@ public class SkillButton
     {
         keyAssigned = key;
         this.skill = skill;
+        this.available = available;
         this.purchased = purchased;
         this.cost = cost;
     }

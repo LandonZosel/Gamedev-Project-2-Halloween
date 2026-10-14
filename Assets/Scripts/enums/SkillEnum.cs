@@ -1,11 +1,11 @@
 public enum Skill
 { 
     Jump,
-    Arrow,
-    Magnet,
-    GravityFlip,
+    Explode,
     Hover,
+    Magnet,
     Speed,
     Fire,
-    Explode
+    Arrow,
+    GravityFlip,
 }

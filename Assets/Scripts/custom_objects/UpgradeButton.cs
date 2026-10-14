@@ -1,14 +1,14 @@
 [System.Serializable]
 public class UpgradeButton
 {
-    public string name;
+    public Upgrade upgrade;
     public bool available;
     public bool purchased;
     public int cost;
 
-    public UpgradeButton(string name, bool available, bool purchased, int cost)
+    public UpgradeButton(Upgrade upgrade, bool available, bool purchased, int cost)
     {
-        this.name = name;
+        this.upgrade = upgrade;
         this.available = available;
         this.purchased = purchased;
         this.cost = cost;
