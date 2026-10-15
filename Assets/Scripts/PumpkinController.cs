@@ -4,6 +4,7 @@ using TMPro;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(Rigidbody))]
 
@@ -51,26 +52,22 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     [SerializeField]
     private Image downSkillReference;
     private List<SkillKey> skillKeyList = new List<SkillKey>();
-    [SerializeField]
     private float jumpCooldown = 2.5f;
-    [SerializeField]
-    private float arrowCooldown = 0f;
+    private float arrowCooldown = 30f;
     private float arrowTime = 0f;
-    [SerializeField]
-    private float magnetCooldown = 0f;
+    private float magnetCooldown = 30f;
     private float magnetTime = 0f;
-    [SerializeField]
-    private float gravityFlipCooldown = 0f;
-    [SerializeField]
-    private float hoverCooldown = 0f;
+    private float gravityFlipCooldown = 30f;
+    private float gravityFlipTime = 0f;
+    private float hoverCooldown = 20f;
     private float hoverTime = 0f;
-    [SerializeField]
-    private float floatCooldown = 0f;
+    private float floatCooldown = 20f;
     private float floatTime = 0f;
-    [SerializeField]
-    private float fireCooldown = 0f;
+    private float floatFallSpeed = 10f;
+    private float fireCooldown = 20f;
     private float fireTime = 0f;
     [SerializeField]
+    private ParticleSystem fireEffect;
     private float explodeCooldown = 30f;
     private bool hasShot = false;
     private bool grounded = false;
@@ -101,6 +98,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private float lastMoneySpawnZ;
     private int money;
     private int dayCount;
+    private Vector3 gravity = new Vector3(0, -35, 0);
     void Awake()
     {
         rig = GetComponent<Rigidbody>();
@@ -126,6 +124,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
             Instantiate(trampoline, spawnPosition, Quaternion.identity);
             // Destroy(obj, 20.0f);
         }
+        fireEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
     // Update is called once per frame
@@ -149,6 +148,15 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         } else
         {
             lineRenderer.enabled = false;
+        }
+
+        if (Time.time <= fireTime)
+        {
+            fireEffect.Play();
+            
+        } else
+        {
+            fireEffect.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
 
         foreach (SkillKey skillKey in skillKeyList)
@@ -179,15 +187,33 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         distanceText.text = "Distance\n" + ((int)transform.position.z);
         timeText.text = "Time\n" + ((int)(Time.timeAsDouble - startTime));
 
+        if (Time.time <= gravityFlipTime)
+        {
+            rig.AddForce(-gravity, ForceMode.Acceleration);
+        } else
+        {
+            rig.AddForce(gravity, ForceMode.Acceleration);
+        }
+
         Vector3 velocity = rig.linearVelocity;
         
         velocity.x += moveInput.x * moveSpeed;
         velocity.x = Mathf.Clamp(velocity.x, -maxXSpeed, maxXSpeed);
 
-        if (velocity.y < -maxFallSpeed)
+        if (Time.time <= floatTime)
         {
-            velocity.y = -maxFallSpeed;
+            if (velocity.y < -floatFallSpeed)
+            {
+                velocity.y = -floatFallSpeed;
+            }
+        } else
+        {
+            if (velocity.y < -maxFallSpeed)
+            {
+                velocity.y = -maxFallSpeed;
+            }
         }
+        
 
         if (Time.time <= hoverTime && velocity.y <= 0)
         {
@@ -342,7 +368,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         hasShot = true;
         startTime = Time.timeAsDouble;
         rig.AddForce(transform.up * shootForce, ForceMode.VelocityChange);
-        rig.useGravity = true;
+        // rig.useGravity = true;
     }
 
     public void Trampoline()
@@ -353,12 +379,20 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         bottomText.AddTrampolineText();
     }
 
-    public void Ghost()
+    public void Ghost(GameObject ghost)
     {
-        //ow slow down
-        rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
-        rig.AddForce(new Vector3(0, 1, 1) * -60, ForceMode.VelocityChange);
-        bottomText.AddText("Hit Ghost :(");
+        if (Time.time <= fireTime)
+        {
+            ghost.SetActive(false);
+            bottomText.AddGhostBurnText();
+        } else
+        {
+           //ow slow down
+            rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
+            rig.AddForce(new Vector3(0, 1, 1) * -60, ForceMode.VelocityChange);
+            bottomText.AddText("Hit Ghost :(");
+        }
+        
     }
 
     public void Money()
@@ -433,10 +467,8 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     private void SkillArrow(SkillKey skillKey)
     {
-        // implement arrow
         arrowTime = Time.time + 20f;
         skillKey.endCooldown = Time.time + arrowCooldown;
-        // arrowCooldown = Time.time + 30f;
     }
 
     private void SkillMagnet(SkillKey skillKey)
@@ -448,28 +480,24 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     private void SkillGravityFlip(SkillKey skillKey)
     {
-        // implement gravity flip
-        // gravityFlipCooldown = Time.time + 20f;
+        gravityFlipTime = Time.time + 5f;
         skillKey.endCooldown = Time.time + gravityFlipCooldown;
     }
 
     private void SkillHover(SkillKey skillKey)
     {
         hoverTime = Time.time + 5f;
-        // hoverCooldown = Time.time + 10f;
         skillKey.endCooldown = Time.time + hoverCooldown;
     }
 
     private void SkillFloat(SkillKey skillKey)
     {
-        // implement float
-        floatTime = Time.time + 20f;
+        floatTime = Time.time + 10f;
         skillKey.endCooldown = Time.time + floatCooldown;
     }
 
     private void SkillFire(SkillKey skillKey)
     {
-        // implement fire
         fireTime = Time.time + 20f;
         skillKey.endCooldown = Time.time + fireCooldown;
     }
@@ -477,7 +505,6 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private void SkillExplode(SkillKey skillKey)
     {
         rig.AddForce(new Vector3(0, 1, 0) * 200, ForceMode.VelocityChange);
-        // explodeCooldown = Time.time + 20f;
         skillKey.endCooldown = Time.time + explodeCooldown;
     }
 
@@ -528,6 +555,11 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                     break;
             }
         }
+
+        skillKeyList.Add(leftSkill);
+        skillKeyList.Add(upSkill);
+        skillKeyList.Add(rightSkill);
+        skillKeyList.Add(downSkill);
 
         foreach (UpgradeButton upgrade in data.upgrades)
         {

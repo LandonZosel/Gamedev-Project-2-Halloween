@@ -327,9 +327,23 @@ public class ShopController : MonoBehaviour, ISaveSystem
     {
         if (selectedSkill != null)
         {
+            SkillButton oldSkill = null;
+            foreach(SkillButton skill in skills)
+            {
+                if (skill.keyAssigned == newKey)
+                {
+                    oldSkill = skill;
+                    break;
+                }
+            }
+
             if (selectedSkill.keyAssigned == Key.None)
             {
                 Debug.Log("Assigning " + selectedSkill.skill + " to " + newKey);
+                if (oldSkill != null)
+                {
+                    oldSkill.keyAssigned = Key.None;
+                }
                 selectedSkill.keyAssigned = newKey;
                 switch (newKey)
                 {
@@ -349,19 +363,8 @@ public class ShopController : MonoBehaviour, ISaveSystem
                 
             } else if (selectedSkill.keyAssigned != newKey)
             {
-                //need to swap sprites
                 Key oldKey = selectedSkill.keyAssigned;
-                SkillButton oldSkill = null;
-
-                foreach(SkillButton skill in skills)
-                {
-                    if (skill.keyAssigned == newKey)
-                    {
-                        oldSkill = skill;
-                        break;
-                    }
-                }
-
+                //need to swap sprites
                 if (oldSkill == null)
                 {
                     Debug.Log("Removing " + selectedSkill.skill + " from " + oldKey + " and assigning to " + newKey);

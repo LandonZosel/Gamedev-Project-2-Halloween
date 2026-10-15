@@ -4,6 +4,8 @@ public class MoneySpawner : MonoBehaviour
 {
     [SerializeField]
     private PumpkinController pumpkin;
+    [SerializeField]
+    private GameObject money;
     private bool disabled = false;
 
     private void OnTriggerEnter(Collider other)
@@ -12,7 +14,7 @@ public class MoneySpawner : MonoBehaviour
         {
             disabled = true;
             pumpkin.Money();
-            DestroyImmediate(this);
+            money.SetActive(false);
         }
     }
 }

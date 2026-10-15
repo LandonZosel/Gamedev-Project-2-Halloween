@@ -10,13 +10,15 @@ public class TextData
     public float startTime;
     public float endTime;
     public bool trampoline;
+    public bool ghost;
 
-    public TextData(string text, float startTime, float endTime, bool trampoline)
+    public TextData(string text, float startTime, float endTime, bool trampoline, bool ghost)
     {
         this.text = text;
         this.startTime = startTime;
         this.endTime = endTime;
         this.trampoline = trampoline;
+        this.ghost = ghost;
     }
 }
 
@@ -30,6 +32,7 @@ public class BottomTextController : MonoBehaviour
     private float fadeDelay;
     private List<TextData> currentText = new List<TextData>();
     private int trampolineMultiplier = 0;
+    private int ghostMultiplier = 0;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -57,6 +60,10 @@ public class BottomTextController : MonoBehaviour
                 {
                     trampolineMultiplier = 0;
                 }
+                if (currentText[i].ghost)
+                {
+                    ghostMultiplier = 0;
+                }
                 currentText.Remove(currentText[i]);
             }
         }
@@ -65,7 +72,7 @@ public class BottomTextController : MonoBehaviour
     public void AddText(string text)
     {
         float now = Time.time;
-        TextData textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, false);
+        TextData textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, false, false);
         currentText.Add(textData);
         bottomText.text += text + "\n";
     }
@@ -77,12 +84,29 @@ public class BottomTextController : MonoBehaviour
         trampolineMultiplier++;
         if (trampolineMultiplier > 1)
         {
-            text = "Bounced on a trampoline! X" + trampolineMultiplier;
+            text += " X" + trampolineMultiplier;
             IEnumerable<TextData> textDataList = currentText.Where(data => data.trampoline == true);
             currentText.Remove(textDataList.First());
         }
         float now = Time.time;
-        textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, true);
+        textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, true, false);
+        currentText.Add(textData);
+        bottomText.text += text + "\n";
+    }
+
+    public void AddGhostBurnText()
+    {
+        string text = "Ghost BURNED";
+        TextData textData;
+        ghostMultiplier++;
+        if (ghostMultiplier > 1)
+        {
+            text += " X" + ghostMultiplier;
+            IEnumerable<TextData> textDataList = currentText.Where(data => data.ghost == true);
+            currentText.Remove(textDataList.First());
+        }
+        float now = Time.time;
+        textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, false, true);
         currentText.Add(textData);
         bottomText.text += text + "\n";
     }
