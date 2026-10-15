@@ -14,6 +14,8 @@ public class CannonController : MonoBehaviour
     private int rotationPolarity = 1;
     private int shootPolarity = 1;
     private float shootForce = 10;
+    private float minShootForce = 10;
+    private float maxShootForce = 60;
     private bool step1Done = false;
     private bool step2Done = false;
     private bool step3Done = false;
@@ -55,17 +57,17 @@ public class CannonController : MonoBehaviour
         {
             shootForce += 1 * shootPolarity;
 
-            if (shootForce >= 60)
+            if (shootForce >= maxShootForce)
             {
-                shootForce = 60;
+                shootForce = maxShootForce;
                 shootPolarity = -1;
-            } else if (shootForce <= 10)
+            } else if (shootForce <= minShootForce)
             {
-                shootForce = 10;
+                shootForce = minShootForce;
                 shootPolarity = 1;
             }
 
-            currentPowerFill = Mathf.Clamp01((shootForce-10)/50);
+            currentPowerFill = Mathf.Clamp01((shootForce-minShootForce)/(maxShootForce-minShootForce));
             UpdatePowerBar();
         } else if (!shot)
         {
@@ -100,4 +102,41 @@ public class CannonController : MonoBehaviour
     {
         powerBar.fillAmount = currentPowerFill;
     }
+
+    public void LoadData(GameData data)
+    {
+        Debug.Log("Loading data from cannon controller");
+        foreach (UpgradeButton upgrade in data.upgrades)
+        {
+            //check if upgrade purchased
+            if (upgrade.purchased)
+            {
+                //switch statement to employ upgrade effect (cannon only)
+                switch (upgrade.upgrade)
+                {
+                    case Upgrade.C1:
+                        minShootForce *= 2;
+                        maxShootForce *= 2;
+                        break;
+                    case Upgrade.C2:
+                        minShootForce *= 2;
+                        maxShootForce *= 2;
+                        break;
+                    case Upgrade.C3:
+                        minShootForce *= 2;
+                        maxShootForce *= 2;
+                        break;
+                    case Upgrade.C4:
+                        minShootForce *= 2;
+                        maxShootForce *= 2;
+                        break;
+                    case Upgrade.C5:
+                        minShootForce *= 2;
+                        maxShootForce *= 2;
+                        break;
+                }
+            }
+        }
+    }
 }
+

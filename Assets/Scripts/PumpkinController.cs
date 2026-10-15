@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Rigidbody))]
 
-public class PumpkinController : MonoBehaviour
+public class PumpkinController : MonoBehaviour, ISaveSystem
 {
     [SerializeField]
     private float moveSpeed;
@@ -86,10 +86,22 @@ public class PumpkinController : MonoBehaviour
 
     [SerializeField]
     private GameObject trampoline;
-    private float nextSpawnThreshold = 10f;
-    private float spawnInterval = 10f;
-    private float lastSpawnZ;
-    private int trampolineNumber = 0;
+    private float trampolineSpawnInterval = 10f;
+    private float lastTrampolineSpawnZ;
+    [SerializeField]
+    private GameObject ghost1;
+    [SerializeField]
+    private GameObject ghost2;
+    [SerializeField]
+    private GameObject ghost3;
+    private float ghostSpawnInterval = 50f;
+    private float lastGhostSpawnZ;
+    [SerializeField]
+    private GameObject moneyObj;
+    private float moneySpawnInterval = 100f;
+    private float lastMoneySpawnZ;
+    private int money;
+    private int dayCount;
     void Awake()
     {
         rig = GetComponent<Rigidbody>();
@@ -102,41 +114,19 @@ public class PumpkinController : MonoBehaviour
         heightText.text = "Height\n0";
         distanceText.text = "Distance\n0";
         timeText.text = "Time\n0";
-        lastSpawnZ = rig.position.z;
-        leftSkill = new SkillKey(
-            Key.Left,
-            Skill.Hover,
-            "hover_skill",
-            leftFillReference
-        );
-        upSkill = new SkillKey(
-            Key.Up,
-            Skill.Jump,
-            "jump_skill",
-            upFillReference
-        );
-        rightSkill = new SkillKey(
-            Key.Right,
-            Skill.Arrow,
-            "arrow_skill",
-            rightFillReference
-        );
-        downSkill = new SkillKey(
-            Key.Down,
-            Skill.Explode,
-            "explode_skill",
-            downFillReference
-        );
-
-        skillKeyList.Add(leftSkill);
-        skillKeyList.Add(upSkill);
-        skillKeyList.Add(rightSkill);
-        skillKeyList.Add(downSkill);
-
-        leftSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + leftSkill.imageFileName);
-        upSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + upSkill.imageFileName);
-        rightSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + rightSkill.imageFileName);
-        downSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + downSkill.imageFileName);
+        lastTrampolineSpawnZ = rig.position.z;
+        for (int i = 0; i < 15; i++)
+        {
+            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-10f, 40f), 10f + i*10);
+            if (spawnPosition.y <= 0)
+            {
+                spawnPosition.y = 1;
+            }
+            
+            // GameObject obj = 
+            Instantiate(trampoline, spawnPosition, Quaternion.identity);
+            // Destroy(obj, 20.0f);
+        }
     }
 
     // Update is called once per frame
@@ -231,20 +221,60 @@ public class PumpkinController : MonoBehaviour
             CallSkill(downSkill);
         }
 
-        if (rig.position.z > lastSpawnZ + spawnInterval)
+        if (rig.position.z > lastTrampolineSpawnZ + trampolineSpawnInterval)
         {
-            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-50f, 10f), rig.position.z + 100f);
+            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-100f, 10f), rig.position.z + 150f);
             if (spawnPosition.y <= 0)
             {
                 spawnPosition.y = 1;
             }
             
-            trampolineNumber++;
-            // Debug.Log("Spawned trampoline #" + trampolineNumber);
             GameObject obj = Instantiate(trampoline, spawnPosition, Quaternion.identity);
             Destroy(obj, 20.0f);
 
-            lastSpawnZ = rig.position.z;
+            lastTrampolineSpawnZ = rig.position.z;
+        }
+
+        if (rig.position.z > lastGhostSpawnZ + ghostSpawnInterval)
+        {
+            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-100f, 10f), rig.position.z + 150f);
+            if (spawnPosition.y <= 0)
+            {
+                spawnPosition.y = 1;
+            }
+
+            int ghostNum = Random.Range(0, 100);
+            GameObject obj;
+            
+            if (ghostNum > 94)
+            {
+                obj = Instantiate(ghost3, spawnPosition, Quaternion.Euler(0, 180, 0));
+            } else if (ghostNum < 5)
+            {
+                obj = Instantiate(ghost2, spawnPosition, Quaternion.Euler(0, 180, 0));
+            }
+            else
+            {
+                obj = Instantiate(ghost1, spawnPosition, Quaternion.Euler(0, 180, 0));
+            }
+            
+            Destroy(obj, 20.0f);
+
+            lastGhostSpawnZ = rig.position.z;
+        }
+
+        if (rig.position.z > lastMoneySpawnZ + moneySpawnInterval)
+        {
+            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-100f, 10f), rig.position.z + 150f);
+            if (spawnPosition.y <= 0)
+            {
+                spawnPosition.y = 1;
+            }
+            
+            GameObject obj = Instantiate(moneyObj, spawnPosition, Quaternion.Euler(-180, 0, -90));
+            Destroy(obj, 20.0f);
+
+            lastMoneySpawnZ = rig.position.z;
         }
 
         IsGrounded();
@@ -270,22 +300,34 @@ public class PumpkinController : MonoBehaviour
 
     public void OnLeftInput (InputAction.CallbackContext context)
     {
-        leftInput = context.ReadValueAsButton();
+        if (leftSkill != null)
+        {
+            leftInput = context.ReadValueAsButton();
+        }
     }
 
     public void OnUpInput (InputAction.CallbackContext context)
     {
-        upInput = context.ReadValueAsButton();
+        if (upSkill != null)
+        {
+            upInput = context.ReadValueAsButton();
+        }
     }
 
     public void OnRightInput (InputAction.CallbackContext context)
     {
-        rightInput = context.ReadValueAsButton();
+        if (rightSkill != null)
+        {
+            rightInput = context.ReadValueAsButton();
+        }
     }
 
     public void OnDownInput (InputAction.CallbackContext context)
     {
-        downInput = context.ReadValueAsButton();
+        if (downSkill != null)
+        {
+            downInput = context.ReadValueAsButton();
+        }
     }
 
     public void Shoot (float shootForce)
@@ -302,6 +344,21 @@ public class PumpkinController : MonoBehaviour
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
         rig.AddForce(new Vector3(0, 2, 1) * 60, ForceMode.VelocityChange);
         bottomText.AddTrampolineText();
+    }
+
+    public void Ghost()
+    {
+        //ow slow down
+        rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
+        rig.AddForce(new Vector3(0, 1, 1) * -60, ForceMode.VelocityChange);
+        bottomText.AddText("Hit Ghost :(");
+    }
+
+    public void Money()
+    {
+        //Gain 100$
+        money += 100;
+        bottomText.AddText("+$100");
     }
 
     void IsGrounded ()
@@ -415,5 +472,166 @@ public class PumpkinController : MonoBehaviour
         rig.AddForce(new Vector3(0, 1, 0) * 200, ForceMode.VelocityChange);
         // explodeCooldown = Time.time + 20f;
         skillKey.endCooldown = Time.time + explodeCooldown;
+    }
+
+    public void LoadData(GameData data)
+    {
+        Debug.Log("Loading data from pumpkin controller");
+        dayCount = data.dayCount;
+        money = data.money;
+        foreach (SkillButton skill in data.skills)
+        {
+            switch (skill.keyAssigned)
+            {
+                case Key.Left:
+                    leftSkill = new SkillKey(
+                        Key.Left,
+                        skill.skill,
+                        skill.imageFileName,
+                        leftFillReference
+                    );
+                    leftSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
+                    break;
+                case Key.Up:
+                    upSkill = new SkillKey(
+                        Key.Up,
+                        skill.skill,
+                        skill.imageFileName,
+                        upFillReference
+                    );
+                    upSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
+                    break;
+                case Key.Right:
+                    rightSkill = new SkillKey(
+                        Key.Right,
+                        skill.skill,
+                        skill.imageFileName,
+                        rightFillReference
+                    );
+                    rightSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
+                    break;
+                case Key.Down:
+                    downSkill = new SkillKey(
+                        Key.Down,
+                        skill.skill,
+                        skill.imageFileName,
+                        downFillReference
+                    );
+                    downSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
+                    break;
+            }
+        }
+
+        foreach (UpgradeButton upgrade in data.upgrades)
+        {
+            //check if upgrade purchased
+            if (upgrade.purchased)
+            {
+                //massive switch statement to employ upgrade effect
+                switch (upgrade.upgrade)
+                {
+                    case Upgrade.T1:
+                        
+                        break;
+                    case Upgrade.T2:
+                        
+                        break;
+                    case Upgrade.T3:
+                        
+                        break;
+                    case Upgrade.S1:
+                        
+                        break;
+                    case Upgrade.S2:
+                        
+                        break;
+                    case Upgrade.S3:
+                        
+                        break;
+                    case Upgrade.G1:
+                        
+                        break;
+                    case Upgrade.Jump1:
+                        
+                        break;
+                    case Upgrade.Jump2:
+                        
+                        break;
+                    case Upgrade.Jump3:
+                        
+                        break;
+                    case Upgrade.Explode1:
+                        
+                        break;
+                    case Upgrade.Explode2:
+                        
+                        break;
+                    case Upgrade.Explode3:
+                        
+                        break;
+                    case Upgrade.Hover1:
+                        
+                        break;
+                    case Upgrade.Hover2:
+                        
+                        break;
+                    case Upgrade.Hover3:
+                        
+                        break;
+                    case Upgrade.Magnet1:
+                        
+                        break;
+                    case Upgrade.Magnet2:
+                        
+                        break;
+                    case Upgrade.Magnet3:
+                        
+                        break;
+                    case Upgrade.Speed1:
+                        
+                        break;
+                    case Upgrade.Speed2:
+                        
+                        break;
+                    case Upgrade.Speed3:
+                        
+                        break;
+                    case Upgrade.Fire1:
+                        
+                        break;
+                    case Upgrade.Fire2:
+                        
+                        break;
+                    case Upgrade.Fire3:
+                        
+                        break;
+                    case Upgrade.Arrow1:
+                        
+                        break;
+                    case Upgrade.Arrow2:
+                        
+                        break;
+                    case Upgrade.Arrow3:
+                        
+                        break;
+                    case Upgrade.GravityFlip1:
+                        
+                        break;
+                    case Upgrade.GravityFlip2:
+                        
+                        break;
+                    case Upgrade.GravityFlip3:
+                        
+                        break;
+                }
+            }
+        }
+    }
+
+    public void SaveData(ref GameData data)
+    {
+        Debug.Log("Saving data from pumpkin controller");
+        data.dayCount = this.dayCount;
+        data.money = this.money;
     }
 }
