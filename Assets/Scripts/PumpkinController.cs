@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Unity.VisualScripting;
+using JetBrains.Annotations;
 
 [RequireComponent(typeof(Rigidbody))]
 
@@ -57,6 +58,9 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private float arrowTime = 0f;
     private float magnetCooldown = 30f;
     private float magnetTime = 0f;
+    [SerializeField]
+    private ParticleSystem magnetEffect;
+    private int magnetAttractionSpeed = 8;
     private float gravityFlipCooldown = 30f;
     private float gravityFlipTime = 0f;
     private float hoverCooldown = 20f;
@@ -120,11 +124,10 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                 spawnPosition.y = 1;
             }
             
-            // GameObject obj = 
             Instantiate(trampoline, spawnPosition, Quaternion.identity);
-            // Destroy(obj, 20.0f);
         }
         fireEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        magnetEffect.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
@@ -158,6 +161,12 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         {
             fireEffect.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
+
+        if (!(Time.time <= magnetTime))
+        {
+            magnetEffect.gameObject.SetActive(false);
+        }
+        
 
         foreach (SkillKey skillKey in skillKeyList)
         {
@@ -225,6 +234,20 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         rig.linearVelocity = velocity;
 
         rig.AddForce(Vector3.back * forwardAirResistance, ForceMode.Force);
+
+        if (Time.time <= magnetTime)
+        {
+            Collider[] itemsNear = Physics.OverlapSphere(transform.position, 8);
+
+            foreach(Collider item in itemsNear)
+            {
+                item.transform.position = Vector3.MoveTowards(
+                    item.transform.position, 
+                    transform.position,
+                    magnetAttractionSpeed * Time.deltaTime
+                );
+            }
+        }
 
         if (leftInput && Time.time >= leftSkill.endCooldown)
         {
@@ -473,9 +496,10 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     private void SkillMagnet(SkillKey skillKey)
     {
-        // implement magnet
         magnetTime = Time.time + 20f;
         skillKey.endCooldown = Time.time + magnetCooldown;
+        magnetEffect.gameObject.SetActive(true);
+        magnetEffect.Play();
     }
 
     private void SkillGravityFlip(SkillKey skillKey)
