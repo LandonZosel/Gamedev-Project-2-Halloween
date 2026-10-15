@@ -9,10 +9,8 @@ using UnityEngine.SceneManagement;
 
 public class PumpkinController : MonoBehaviour, ISaveSystem
 {
-    [SerializeField]
-    private float moveSpeed;
-    [SerializeField]
-    private float maxXSpeed;
+    private float moveSpeed = 1;
+    private float maxXSpeed = 15;
     [SerializeField]
     private float forwardAirResistance = 0.99f;
     [SerializeField]
@@ -67,8 +65,8 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private float hoverCooldown = 0f;
     private float hoverTime = 0f;
     [SerializeField]
-    private float speedCooldown = 0f;
-    private float speedTime = 0f;
+    private float floatCooldown = 0f;
+    private float floatTime = 0f;
     [SerializeField]
     private float fireCooldown = 0f;
     private float fireTime = 0f;
@@ -88,6 +86,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private GameObject trampoline;
     private float trampolineSpawnInterval = 10f;
     private float lastTrampolineSpawnZ;
+    private int trampolineForce = 20;
     [SerializeField]
     private GameObject ghost1;
     [SerializeField]
@@ -115,9 +114,9 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         distanceText.text = "Distance\n0";
         timeText.text = "Time\n0";
         lastTrampolineSpawnZ = rig.position.z;
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 30; i++)
         {
-            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-10f, 40f), 10f + i*10);
+            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-30f, 30f), rig.position.y + Random.Range(-10f, 40f), 10f + i*5);
             if (spawnPosition.y <= 0)
             {
                 spawnPosition.y = 1;
@@ -223,14 +222,22 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
         if (rig.position.z > lastTrampolineSpawnZ + trampolineSpawnInterval)
         {
-            Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-40f, 40f), rig.position.y + Random.Range(-100f, 10f), rig.position.z + 150f);
-            if (spawnPosition.y <= 0)
+            Vector3 localSpawnPosition = new Vector3(rig.position.x + Random.Range(-30f, 30f), rig.position.y + Random.Range(-60f, 20f), rig.position.z + 150f);
+            Vector3 farSpawnPosition = new Vector3(rig.position.x + Random.Range(-30f, 30f), rig.position.y + Random.Range(-100f, -30f), rig.position.z + 40f);
+            if (localSpawnPosition.y <= 0)
             {
-                spawnPosition.y = 1;
+                localSpawnPosition.y = 1;
+            }
+
+            if (farSpawnPosition.y < 1)
+            {
+                farSpawnPosition.y = -99;
             }
             
-            GameObject obj = Instantiate(trampoline, spawnPosition, Quaternion.identity);
-            Destroy(obj, 20.0f);
+            GameObject obj1 = Instantiate(trampoline, localSpawnPosition, Quaternion.identity);
+            GameObject obj2 = Instantiate(trampoline, farSpawnPosition, Quaternion.identity);
+            Destroy(obj1, 20.0f);
+            Destroy(obj2, 20.0f);
 
             lastTrampolineSpawnZ = rig.position.z;
         }
@@ -342,7 +349,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     {
         //bounce
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
-        rig.AddForce(new Vector3(0, 2, 1) * 60, ForceMode.VelocityChange);
+        rig.AddForce(new Vector3(0, 2, 1) * trampolineForce, ForceMode.VelocityChange);
         bottomText.AddTrampolineText();
     }
 
@@ -401,9 +408,9 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                 bottomText.AddText("Activated Hover!");
                 SkillHover(skillKey);
                 break;
-            case Skill.Speed:
-                bottomText.AddText("Activated Speed!");
-                SkillSpeed(skillKey);
+            case Skill.Float:
+                bottomText.AddText("Activated Float!");
+                SkillFloat(skillKey);
                 break;
             case Skill.Fire:
                 bottomText.AddText("Activated Fire!");
@@ -453,11 +460,11 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         skillKey.endCooldown = Time.time + hoverCooldown;
     }
 
-    private void SkillSpeed(SkillKey skillKey)
+    private void SkillFloat(SkillKey skillKey)
     {
-        // implement speed
-        speedTime = Time.time + 20f;
-        skillKey.endCooldown = Time.time + speedCooldown;
+        // implement float
+        floatTime = Time.time + 20f;
+        skillKey.endCooldown = Time.time + floatCooldown;
     }
 
     private void SkillFire(SkillKey skillKey)
@@ -531,22 +538,22 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                 switch (upgrade.upgrade)
                 {
                     case Upgrade.T1:
-                        
+                        trampolineForce *= 2;
                         break;
                     case Upgrade.T2:
-                        
+                        trampolineSpawnInterval -= 5;
                         break;
                     case Upgrade.T3:
-                        
+                        trampolineForce *= 2;
                         break;
                     case Upgrade.S1:
-                        
+                        maxXSpeed += 15;
                         break;
                     case Upgrade.S2:
-                        
+                        moveSpeed += 1;
                         break;
                     case Upgrade.S3:
-                        
+                        forwardAirResistance = 0.97f;
                         break;
                     case Upgrade.G1:
                         
@@ -587,13 +594,13 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                     case Upgrade.Magnet3:
                         
                         break;
-                    case Upgrade.Speed1:
+                    case Upgrade.Float1:
                         
                         break;
-                    case Upgrade.Speed2:
+                    case Upgrade.Float2:
                         
                         break;
-                    case Upgrade.Speed3:
+                    case Upgrade.Float3:
                         
                         break;
                     case Upgrade.Fire1:

@@ -52,7 +52,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         skillButtons[(int)Skill.Explode].onClick.AddListener(() => SkillButtonPressed(Skill.Explode));
         skillButtons[(int)Skill.Hover].onClick.AddListener(() => SkillButtonPressed(Skill.Hover));
         skillButtons[(int)Skill.Magnet].onClick.AddListener(() => SkillButtonPressed(Skill.Magnet));
-        skillButtons[(int)Skill.Speed].onClick.AddListener(() => SkillButtonPressed(Skill.Speed));
+        skillButtons[(int)Skill.Float].onClick.AddListener(() => SkillButtonPressed(Skill.Float));
         skillButtons[(int)Skill.Fire].onClick.AddListener(() => SkillButtonPressed(Skill.Fire));
         skillButtons[(int)Skill.Arrow].onClick.AddListener(() => SkillButtonPressed(Skill.Arrow));
         skillButtons[(int)Skill.GravityFlip].onClick.AddListener(() => SkillButtonPressed(Skill.GravityFlip));
@@ -81,9 +81,9 @@ public class ShopController : MonoBehaviour, ISaveSystem
         upgradeButtons[(int)Upgrade.Magnet1].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Magnet1));
         upgradeButtons[(int)Upgrade.Magnet2].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Magnet2));
         upgradeButtons[(int)Upgrade.Magnet3].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Magnet3));
-        upgradeButtons[(int)Upgrade.Speed1].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Speed1));
-        upgradeButtons[(int)Upgrade.Speed2].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Speed2));
-        upgradeButtons[(int)Upgrade.Speed3].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Speed3));
+        upgradeButtons[(int)Upgrade.Float1].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Float1));
+        upgradeButtons[(int)Upgrade.Float2].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Float2));
+        upgradeButtons[(int)Upgrade.Float3].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Float3));
         upgradeButtons[(int)Upgrade.Fire1].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Fire1));
         upgradeButtons[(int)Upgrade.Fire2].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Fire2));
         upgradeButtons[(int)Upgrade.Fire3].onClick.AddListener(() => UpgradeButtonPressed(Upgrade.Fire3));

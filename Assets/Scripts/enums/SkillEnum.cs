@@ -5,7 +5,7 @@ public enum Skill
     Explode,
     Hover,
     Magnet,
-    Speed,
+    Float,
     Fire,
     Arrow,
     GravityFlip,

@@ -10,6 +10,8 @@ public class CannonController : MonoBehaviour
     private Image powerBarBackground;
     [SerializeField]
     private PumpkinController pumpkin;
+    [SerializeField]
+    private CameraFollow camera;
     private float currentPowerFill = 0f;
     private int rotationPolarity = 1;
     private int shootPolarity = 1;
@@ -72,6 +74,7 @@ public class CannonController : MonoBehaviour
         } else if (!shot)
         {
             pumpkin.Shoot(shootForce);
+            camera.Shoot();
             shot = true;
         }
         
