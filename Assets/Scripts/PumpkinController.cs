@@ -15,7 +15,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     [SerializeField]
     private float forwardAirResistance = 1f;
     [SerializeField]
-    private float maxFallSpeed = 100f;
+    private float maxFallSpeed = 200f;
     [SerializeField]
     private TMP_Text heightText;
     [SerializeField]
@@ -56,7 +56,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private Image downSkillReference;
     private List<SkillKey> skillKeyList = new List<SkillKey>();
     private float jumpCooldown = 10f;
-    private int jumpPower = 30;
+    private float jumpPower = 30f;
     private float arrowCooldown = 30f;
     private float arrowLength = 15f;
     private bool arrow2 = false;
@@ -66,7 +66,8 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private float magnetTime = 0f;
     [SerializeField]
     private ParticleSystem magnetEffect;
-    private int magnetAttractionSpeed = 10;
+    private int magnetAttractionSpeed = 20;
+    private int magnetRadius = 20;
     private float gravityFlipCooldown = 60f;
     private float gravityFlipLength = 5f;
     private float gravityFlipTime = 0f;
@@ -114,7 +115,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private GameObject moneyObj;
     private float moneySpawnInterval = 50f;
     private float lastMoneySpawnZ;
-    private Vector3 gravity = new Vector3(0, -35, 0);
+    private Vector3 gravity = new Vector3(0, -40, 0);
 
     [SerializeField]
     private CanvasGroup scoreCanvas;
@@ -129,22 +130,16 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     [SerializeField]
     private SaveSystem saveSystem;
 
-    private Camera bakeCamera;
+    [SerializeField]
+    private AudioSource mars;
+
+    private int winHeight = 10000;
+    private int timeLimit = 120;
     
     void Awake()
     {
         rig = GetComponent<Rigidbody>();
         lineRenderer = GetComponentInChildren<LineRenderer>();
-
-        GameObject camGo = new GameObject("BakeCamera_Internal");
-        camGo.transform.SetParent(this.transform);
-        
-        bakeCamera = camGo.AddComponent<Camera>();
-        
-        bakeCamera.enabled = false; 
-
-        camGo.transform.localPosition = new Vector3(0, 0, -10f);
-        camGo.transform.localRotation = Quaternion.identity; 
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -152,8 +147,9 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     {
         heightText.text = "Height\n0";
         distanceText.text = "Distance\n0";
-        timeText.text = "Time\n0";
+        timeText.text = "Time\n120";
         lastTrampolineSpawnZ = rig.position.z;
+        mars.volume = 0.25f;
         for (int i = 0; i < 30; i++)
         {
             Vector3 spawnPosition = new Vector3(rig.position.x + Random.Range(-30f, 30f), rig.position.y + Random.Range(-10f, 40f), 20f + i*5);
@@ -221,12 +217,6 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                     break;
                 }
             }
-
-
-            // Mesh mesh = new Mesh();
-            // lineRenderer.BakeMesh(mesh, bakeCamera, false);
-            // // lineMeshCollider.transform.position = transform.position;
-            // lineMeshCollider.sharedMesh = mesh;
         } else
         {
             lineRenderer.enabled = false;
@@ -268,9 +258,22 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         {
             maxDistance = currentDistance;
         }
-        int currentTime = (int)(Time.timeAsDouble - startTime);
-        timeText.text = "Time\n" + currentTime;
-        maxTime = currentTime;
+        int timeRemaining = timeLimit - (int)(Time.timeAsDouble - startTime);
+        timeText.text = "Time\n" + timeRemaining;
+        maxTime = timeLimit - timeRemaining;
+
+        if (timeRemaining <= 0)
+        {
+            EndGame(true);
+        }
+
+        float marsVolume = currentHeight/winHeight;
+        if (marsVolume < 0.25f)
+        {
+            marsVolume = 0.25f;
+        }
+        mars.volume = marsVolume;
+
 
         if (Time.time <= gravityFlipTime)
         {
@@ -309,11 +312,15 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
         rig.linearVelocity = velocity;
 
-        rig.AddForce(Vector3.back * forwardAirResistance, ForceMode.Force);
+        if (velocity.z > 0)
+        {
+            rig.AddForce(Vector3.back * forwardAirResistance, ForceMode.Force);
+        }
+        
 
         if (Time.time <= magnetTime)
         {
-            Collider[] itemsNear = Physics.OverlapSphere(transform.position, 8);
+            Collider[] itemsNear = Physics.OverlapSphere(transform.position, magnetRadius);
 
             foreach(Collider item in itemsNear)
             {
@@ -471,7 +478,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     {
         //bounce
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
-        rig.AddForce(new Vector3(0, 2, 1) * trampolineForce, ForceMode.VelocityChange);
+        rig.AddForce(new Vector3(0, 3, 1) * trampolineForce, ForceMode.VelocityChange);
         var currentMult = bottomText.AddTrampolineText();
         if (currentMult > maxTrampolineMultiplier)
         {
@@ -515,18 +522,31 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
             GameObject hitObject = hit.collider.gameObject;
             if (hitObject.CompareTag("Plane"))
             {
-                //hit ground :(
-                grounded = true;
-                bottomText.AddText("Landed on ground :(");
-                //set score text based on variables
-                scoreTitleText.text = "Night " + dayCount + " Results";
-                scoreText.text = CreateScoreText();
-                saveSystem.SaveGame();
-                //fade in score
-                scoreCanvas.gameObject.SetActive(true);
-                StartCoroutine(FadeRoutine(0f, 1f));
+                EndGame(true);
             }
         }
+    }
+
+    void EndGame (bool hitGround)
+    {
+        grounded = true;
+
+        if (hitGround)
+        {
+            //hit ground :(
+            bottomText.AddText("Landed on ground :(");
+        } else
+        {
+            bottomText.AddText("Ran out of time!");
+        }
+        
+        //set score text based on variables
+        scoreTitleText.text = "Night " + dayCount + " Results";
+        scoreText.text = CreateScoreText();
+        saveSystem.SaveGame();
+        //fade in score
+        scoreCanvas.gameObject.SetActive(true);
+        StartCoroutine(FadeRoutine(0f, 1f));
     }
 
     private string CreateScoreText()
@@ -648,7 +668,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     private void SkillExplode(SkillKey skillKey)
     {
-        rig.AddForce(new Vector3(0, 1, 0) * explodePower, ForceMode.VelocityChange);
+        rig.AddForce(new Vector3(0, 1, 0.1f) * explodePower, ForceMode.VelocityChange);
         skillKey.endCooldown = Time.time + explodeCooldown;
     }
 
@@ -733,13 +753,13 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                         gravity *= 0.5f;
                         break;
                     case Upgrade.Jump1:
-                        jumpCooldown -= 2.5f;
+                        jumpCooldown -= 1f;
                         break;
                     case Upgrade.Jump2:
-                        jumpPower *= 2;
+                        jumpPower *= 1.5f;
                         break;
                     case Upgrade.Jump3:
-                        jumpCooldown -= 2.5f;
+                        jumpCooldown -= 2f;
                         break;
                     case Upgrade.Explode1:
                         explodePower *= 2;

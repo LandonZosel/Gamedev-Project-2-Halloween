@@ -50,6 +50,11 @@ public class ShopController : MonoBehaviour, ISaveSystem
     private UpgradeButton selectedUpgrade;
     private int dayCount;
     private int money;
+
+    [SerializeField]
+    private AudioSource purchaseSound;
+    [SerializeField]
+    private AudioSource equipSound;
     
     void Start()
     {
@@ -132,6 +137,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
     public void SkillButtonPressed(Skill skill)
     {
         UpdateSkillButtonState(false);
+        // buttonSound.Play();
 
         if (selectedSkill == skills[(int)skill])
         {
@@ -165,6 +171,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
     public void UpgradeButtonPressed(Upgrade upgrade)
     {
         UpdateSkillButtonState(false);
+        // buttonSound.Play();
 
         if (selectedUpgrade == upgrades[(int)upgrade])
         {
@@ -248,6 +255,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void PlayButton()
     {
+        // buttonSound.Play();
         saveSystem.SaveGame();
         SceneManager.LoadScene("Game");
     }
@@ -265,8 +273,9 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void PurchaseSkill()
     {
-        if (selectedSkill.cost <= money)
+        if (selectedSkill.cost <= money && !selectedSkill.purchased && selectedSkill.available)
         {
+            purchaseSound.Play();
             money -= selectedSkill.cost;
             SetMoneyText();
             selectedSkill.purchased = true;
@@ -291,8 +300,9 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void PurchaseUpgrade()
     {
-        if (selectedUpgrade.cost <= money)
+        if (selectedUpgrade.cost <= money && !selectedUpgrade.purchased && selectedUpgrade.available)
         {
+            purchaseSound.Play();
             money -= selectedUpgrade.cost;
             SetMoneyText();
             selectedUpgrade.purchased = true;
@@ -347,6 +357,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
     {
         if (selectedSkill != null)
         {
+            // buttonSound.Play();
             UpdateSkillButtonState(true);
         }
     }
@@ -471,6 +482,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
             }
         }
+        equipSound.Play();
         UpdateSkillButtonState(false);
     }
 
@@ -484,6 +496,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void SaveAndQuitButton()
     {
+        // buttonSound.Play();
         saveSystem.SaveGame();
         SceneManager.LoadScene("Menu");
     }

@@ -60,10 +60,6 @@ public class BottomTextController : MonoBehaviour
                 {
                     trampolineMultiplier = 0;
                 }
-                if (currentText[i].ghost)
-                {
-                    ghostMultiplier = 0;
-                }
                 currentText.Remove(currentText[i]);
             }
         }
