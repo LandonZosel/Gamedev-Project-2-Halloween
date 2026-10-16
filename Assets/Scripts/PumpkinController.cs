@@ -730,7 +730,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                         forwardAirResistance = 0.75f;
                         break;
                     case Upgrade.G1:
-                        
+                        gravity *= 0.5f;
                         break;
                     case Upgrade.Jump1:
                         jumpCooldown -= 2.5f;

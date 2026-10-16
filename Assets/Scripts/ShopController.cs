@@ -4,6 +4,7 @@ using NUnit.Framework.Internal.Commands;
 using TMPro;
 using UnityEditor.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -132,6 +133,12 @@ public class ShopController : MonoBehaviour, ISaveSystem
     {
         UpdateSkillButtonState(false);
 
+        if (selectedSkill == skills[(int)skill])
+        {
+            PurchaseSkill();
+            return;
+        }
+
         selectedSkill = skills[(int)skill];
         selectedUpgrade = null;
         skillImage.gameObject.SetActive(true);
@@ -153,12 +160,17 @@ public class ShopController : MonoBehaviour, ISaveSystem
             //switch text
             SwitchSkillText();
         }
-        
     }
 
     public void UpgradeButtonPressed(Upgrade upgrade)
     {
         UpdateSkillButtonState(false);
+
+        if (selectedUpgrade == upgrades[(int)upgrade])
+        {
+            PurchaseUpgrade();
+            return;
+        }
 
         selectedUpgrade = upgrades[(int)upgrade];
         selectedSkill = null;
@@ -253,7 +265,6 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void PurchaseSkill()
     {
-        //TODO purchase currently selected skill if enough money
         if (selectedSkill.cost <= money)
         {
             money -= selectedSkill.cost;
@@ -280,7 +291,6 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void PurchaseUpgrade()
     {
-        //TODO purchase currently selected upgrade if enough money
         if (selectedUpgrade.cost <= money)
         {
             money -= selectedUpgrade.cost;
