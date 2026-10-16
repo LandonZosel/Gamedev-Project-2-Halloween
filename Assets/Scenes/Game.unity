@@ -632,7 +632,6 @@ GameObject:
   - component: {fileID: 292561070}
   - component: {fileID: 292561073}
   - component: {fileID: 292561072}
-  - component: {fileID: 292561071}
   m_Layer: 6
   m_Name: Stem2
   m_TagString: Pumpkin
@@ -655,29 +654,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 785341929}
   m_LocalEulerAnglesHint: {x: 52.095, y: 4.098, z: -2.437}
---- !u!136 &292561071
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 292561069}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!23 &292561072
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1671,6 +1647,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: LittleGhost_LP (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 2676405798547930095, guid: 4b5b08dfd84e3c342b10a4e2ed977d48, type: 3}
+      propertyPath: m_TagString
+      value: Ghost
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2438,6 +2418,10 @@ PrefabInstance:
     - target: {fileID: 498253721416304272, guid: f6ab88624626d1249bd73bcb4a1c7d59, type: 3}
       propertyPath: m_Name
       value: LittleGhost_LP (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 498253721416304272, guid: f6ab88624626d1249bd73bcb4a1c7d59, type: 3}
+      propertyPath: m_TagString
+      value: Ghost
       objectReference: {fileID: 0}
     - target: {fileID: 498253721416304279, guid: f6ab88624626d1249bd73bcb4a1c7d59, type: 3}
       propertyPath: m_IsTrigger
@@ -3726,6 +3710,10 @@ PrefabInstance:
     - target: {fileID: 5446477390807014373, guid: b713585f24f940f4eadb10319818ef40, type: 3}
       propertyPath: m_Name
       value: LittleGhost_LP (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5446477390807014373, guid: b713585f24f940f4eadb10319818ef40, type: 3}
+      propertyPath: m_TagString
+      value: Ghost
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6084,7 +6072,6 @@ GameObject:
   - component: {fileID: 1931635664}
   - component: {fileID: 1931635667}
   - component: {fileID: 1931635666}
-  - component: {fileID: 1931635665}
   m_Layer: 6
   m_Name: Stem
   m_TagString: Pumpkin
@@ -6107,29 +6094,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 785341929}
   m_LocalEulerAnglesHint: {x: 29.748, y: 0, z: 0}
---- !u!136 &1931635665
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1931635663}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!23 &1931635666
 MeshRenderer:
   m_ObjectHideFlags: 0
