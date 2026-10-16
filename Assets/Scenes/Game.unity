@@ -635,7 +635,7 @@ GameObject:
   - component: {fileID: 292561071}
   m_Layer: 6
   m_Name: Stem2
-  m_TagString: Untagged
+  m_TagString: Pumpkin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6087,7 +6087,7 @@ GameObject:
   - component: {fileID: 1931635665}
   m_Layer: 6
   m_Name: Stem
-  m_TagString: Untagged
+  m_TagString: Pumpkin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

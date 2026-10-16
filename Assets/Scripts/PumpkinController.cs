@@ -371,11 +371,14 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
             foreach(Collider item in itemsNear)
             {
-                item.transform.position = Vector3.MoveTowards(
-                    item.transform.position, 
-                    transform.position,
-                    magnetAttractionSpeed * Time.deltaTime
-                );
+                if (item.CompareTag("Ghost") || item.CompareTag("Money") || item.CompareTag("Trampoline"))
+                {
+                    item.transform.position = Vector3.MoveTowards(
+                        item.transform.position, 
+                        transform.position,
+                        magnetAttractionSpeed * Time.deltaTime
+                    );
+                }
             }
         }
 
