@@ -135,6 +135,16 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     [SerializeField]
     private AudioSource mars;
+    [SerializeField]
+    private AudioSource jump;
+    [SerializeField]
+    private AudioSource hit;
+    [SerializeField]
+    private AudioSource moneyGained;
+    [SerializeField]
+    private AudioSource explode;
+    [SerializeField]
+    private AudioSource flame;
 
     private int winHeight = 10000;
     private int timeLimit = 120;
@@ -533,6 +543,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         //bounce
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
         rig.AddForce(new Vector3(0, 3, 1) * trampolineForce, ForceMode.VelocityChange);
+        jump.Play();
         var currentMult = bottomText.AddTrampolineText();
         if (currentMult > maxTrampolineMultiplier)
         {
@@ -546,6 +557,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         {
             ghost.SetActive(false);
             var currentMult = bottomText.AddGhostBurnText(fire2);
+            flame.Play();
             if (currentMult > maxGhostBurnedMultiplier)
             {
                 maxGhostBurnedMultiplier = currentMult;
@@ -555,6 +567,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
            //ow slow down
             rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
             rig.AddForce(new Vector3(0, 1, 1) * -60, ForceMode.VelocityChange);
+            hit.Play();
             bottomText.AddText("Hit Ghost... (._.)");
         }
         
@@ -564,6 +577,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     {
         //Gain $100/$1000
         benjaminsCollected++;
+        moneyGained.Play();
         bottomText.AddText("+$" + benjaminValue);
     }
 
@@ -762,6 +776,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     {
         rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
         rig.AddForce(new Vector3(0, 2, 1) * jumpPower, ForceMode.VelocityChange);
+        jump.Play();
         skillKey.endCooldown = Time.time + jumpCooldown;
     }
 
@@ -806,6 +821,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private void SkillExplode(SkillKey skillKey)
     {
         rig.AddForce(new Vector3(0, 1, 0.1f) * explodePower, ForceMode.VelocityChange);
+        explode.Play();
         skillKey.endCooldown = Time.time + explodeCooldown;
     }
 

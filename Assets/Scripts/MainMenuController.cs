@@ -17,9 +17,7 @@ public class MainMenuController : MonoBehaviour, ISaveSystem
 
     public void NewGameButton()
     {
-        data = new GameData();
-        saveSystem.SaveGame();
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene("Story");
     }
 
     public void QuitButton()
