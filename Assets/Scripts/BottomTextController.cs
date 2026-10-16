@@ -104,7 +104,10 @@ public class BottomTextController : MonoBehaviour
         {
             text += " X" + ghostMultiplier;
             IEnumerable<TextData> textDataList = currentText.Where(data => data.ghost == true);
-            currentText.Remove(textDataList.First());
+            if (textDataList.Count() > 0)
+            {
+                currentText.Remove(textDataList.First());
+            }
         }
         float now = Time.time;
         textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, false, true);

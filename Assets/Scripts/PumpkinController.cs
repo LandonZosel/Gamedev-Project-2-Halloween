@@ -119,12 +119,15 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     [SerializeField]
     private CanvasGroup scoreCanvas;
+    [SerializeField]
+    private CanvasGroup uiCanvas;
     private int maxDistance = 0;
     private int maxHeight = 0;
     private int maxTime = 0;
     private int benjaminsCollected = 0;
+    private int benjaminValue = 100;
     private int maxTrampolineMultiplier = 1;
-    private int maxGhostBurnedMultiplier = 1;
+    private int maxGhostBurnedMultiplier = 0;
     private int money;
     private int dayCount;
     [SerializeField]
@@ -135,6 +138,20 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     private int winHeight = 10000;
     private int timeLimit = 120;
+    private bool winning = false;
+    private bool spawnedMoon = false;
+    [SerializeField]
+    private GameObject moon;
+    [SerializeField]
+    private CameraFollow camera;
+    [SerializeField]
+    private CanvasGroup winCanvas;
+    private float waitTime = 0f;
+    private bool finished = false;
+    [SerializeField]
+    private TMP_Text winSubtitleText;
+    [SerializeField]
+    private TMP_Text winSuperSubtitleText;
     
     void Awake()
     {
@@ -163,11 +180,18 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         fireEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         magnetEffect.gameObject.SetActive(false);
         scoreCanvas.gameObject.SetActive(false);
+        winCanvas.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (winning)
+        {
+            mars.volume = 0.9f;
+            return;
+        }
+
         if (Time.time <= fireTime)
         {
             fireEffect.Play();
@@ -246,6 +270,24 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
             return;
         }
 
+        if (winning)
+        {
+            if (rig.linearVelocity.y > 50)
+            {
+                rig.AddForce(Vector3.down, ForceMode.VelocityChange);
+            } else if (!spawnedMoon)
+            {
+                SpawnMoon();
+            } else if(Time.time > waitTime && !finished)
+            {
+                finished = true;
+                //fade in win ui
+                winCanvas.gameObject.SetActive(true);
+                StartCoroutine(FadeInCanvas(winCanvas, 0f, 1f));
+            }
+            return;
+        }
+
         int currentHeight = (int)transform.position.y;
         heightText.text = "Height\n" + currentHeight;
         if (currentHeight > maxHeight)
@@ -264,13 +306,18 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
         if (timeRemaining <= 0)
         {
-            EndGame(true);
+            EndGame(false);
         }
 
-        float marsVolume = currentHeight/winHeight;
+        float marsVolume = Mathf.Clamp01(currentHeight/winHeight);
         if (marsVolume < 0.25f)
         {
             marsVolume = 0.25f;
+        }
+
+        if (marsVolume >= 0.9f)
+        {
+            marsVolume = 0.9f;
         }
         mars.volume = marsVolume;
 
@@ -417,15 +464,19 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         }
 
         IsGrounded();
+        IsWon();
     }
 
     public void OnMoveInput (InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
     }
-    public void OnExitInput ()
+    public void SaveAndQuitButton()
     {
-        Application.Quit();
+        dayCount++;
+        CreateScoreText();
+        saveSystem.SaveGame();
+        SceneManager.LoadScene("Menu");
     }
 
     public void OnContinueInput()
@@ -508,9 +559,9 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
 
     public void Money()
     {
-        //Gain 100$
+        //Gain $100/$1000
         benjaminsCollected++;
-        bottomText.AddText("+$100");
+        bottomText.AddText("+$" + benjaminValue);
     }
 
     void IsGrounded ()
@@ -526,6 +577,53 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
             }
         }
     }
+    void IsWon ()
+    {
+        if ((int)transform.position.y >= winHeight)
+        {
+            //fade out UI
+            StartCoroutine(FadeOutUI(1f, 0f));
+            gravity.y = 0;
+            if (rig.linearVelocity.y < 50)
+            {
+                rig.linearVelocity = new Vector3(0, 50, 0);
+            }
+            else
+            {
+                rig.linearVelocity = new Vector3(0, rig.linearVelocity.y, 0);
+            }
+            winSubtitleText.text = "You beat the game in " + dayCount + " nights!";
+            if (dayCount > 20)
+            {
+                winSuperSubtitleText.text = "You made it in the end.";
+            } else if (dayCount > 15)
+            {
+                winSuperSubtitleText.text = "Good job!";
+            } else if (dayCount > 10)
+            {
+                winSuperSubtitleText.text = "Wow! Impressive!";
+            } else if (dayCount > 1)
+            {
+                winSuperSubtitleText.text = "Unbelievable!";
+            } else
+            {
+                winSuperSubtitleText.text = "... did you cheat";
+            }
+            winning = true;
+
+        }
+    }
+
+    void SpawnMoon()
+    {
+        //spawn moon above and in front of the player
+        Vector3 spawnPosition = new Vector3(rig.position.x, rig.position.y + 500f, rig.position.z + 150f);
+        Instantiate(moon, spawnPosition, Quaternion.identity);
+        camera.StartWinning();
+        spawnedMoon = true;
+
+        waitTime = Time.time + 10f;
+    }
 
     void EndGame (bool hitGround)
     {
@@ -539,6 +637,8 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         {
             bottomText.AddText("Ran out of time!");
         }
+
+        StartCoroutine(FadeOutMusic(mars, 1f, 0));
         
         //set score text based on variables
         scoreTitleText.text = "Night " + dayCount + " Results";
@@ -546,41 +646,75 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         saveSystem.SaveGame();
         //fade in score
         scoreCanvas.gameObject.SetActive(true);
-        StartCoroutine(FadeRoutine(0f, 1f));
+        StartCoroutine(FadeInCanvas(scoreCanvas, 0f, 1f));
     }
 
     private string CreateScoreText()
     {
         string distanceScore = "Distance: " + maxDistance + "ft -> $" + maxDistance/10 + "\n";
-        string heightScore = "Height: " + maxHeight + "ft -> $" + maxHeight/10 + "\n";
+        string heightScore = "Height: " + maxHeight + "ft -> $" + maxHeight/5 + "\n";
         string timeScore = "Time: " + maxTime + "s -> $" + maxTime + "\n";
-        string benjaminsScore = "Benjamins Collected: " + benjaminsCollected + " -> $" + benjaminsCollected*100 + "\n";
+        string benjaminsScore = "Benjamins Collected: " + benjaminsCollected + " -> $" + benjaminsCollected*benjaminValue + "\n";
         string trampolineMultiplier = "Trampoline Multiplier: X" + maxTrampolineMultiplier + "\n";
-        string ghostBurnedMultiplier = "Ghost Burned Multiplier: X" + maxGhostBurnedMultiplier + "\n";
-        int moneyEarned = ((maxDistance/10) + (maxHeight/10) + maxTime + (benjaminsCollected*100)) * maxTrampolineMultiplier * maxGhostBurnedMultiplier;
+        string ghostBurnedMultiplier = "Ghost Burned Multiplier: X" + (maxGhostBurnedMultiplier+1) + "\n";
+        int moneyEarned = ((maxDistance/10) + (maxHeight/5) + maxTime + (benjaminsCollected*benjaminValue)) * maxTrampolineMultiplier * (maxGhostBurnedMultiplier+1);
         money += moneyEarned;
         return distanceScore + heightScore + timeScore + benjaminsScore + trampolineMultiplier + ghostBurnedMultiplier + "Money Earned\n" + moneyEarned + "\nTotal Money\n" + money;
     }
 
-    private IEnumerator FadeRoutine(float startAlpha, float targetAlpha)
+    private IEnumerator FadeInCanvas(CanvasGroup canvas, float startAlpha, float targetAlpha)
     {
         float elapsedTime = 0f;
-        scoreCanvas.alpha = startAlpha;
+        canvas.alpha = startAlpha;
 
-        if (targetAlpha > 0) scoreCanvas.blocksRaycasts = true;
-        else scoreCanvas.blocksRaycasts = false;
+        if (targetAlpha > 0) canvas.blocksRaycasts = true;
+        else canvas.blocksRaycasts = false;
 
         while (elapsedTime < 2)
         {
             elapsedTime += Time.deltaTime;
-            scoreCanvas.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / 2);
+            canvas.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / 2);
             yield return null;
         }
 
-        scoreCanvas.alpha = targetAlpha;
+        canvas.alpha = targetAlpha;
     }
 
+    private IEnumerator FadeOutUI(float startAlpha, float targetAlpha)
+    {
+        float elapsedTime = 0f;
+        uiCanvas.alpha = startAlpha;
 
+        if (targetAlpha > 0) uiCanvas.blocksRaycasts = true;
+        else uiCanvas.blocksRaycasts = false;
+
+        while (elapsedTime < 5)
+        {
+            elapsedTime += Time.deltaTime;
+            uiCanvas.alpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / 5);
+            yield return null;
+        }
+
+        uiCanvas.alpha = targetAlpha;
+    }
+
+    public IEnumerator FadeOutMusic(AudioSource audioSource, float duration, float targetVolume)
+    {
+        float currentTime = 0;
+        float startVolume = audioSource.volume;
+
+        while (currentTime < duration)
+        {
+            currentTime += Time.deltaTime;
+            audioSource.volume = Mathf.Lerp(startVolume, targetVolume, currentTime / duration);
+            yield return null;
+        }
+
+        if (targetVolume <= 0)
+        {
+            audioSource.Stop();
+        }
+    }
     private void CallSkill(SkillKey skillKey)
     {
         switch (skillKey.skill)
@@ -811,6 +945,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
                         break;
                     case Upgrade.Arrow2:
                         arrow2 = true;
+                        benjaminValue = 1000;
                         break;
                     case Upgrade.Arrow3:
                         arrowLength += 5f;
