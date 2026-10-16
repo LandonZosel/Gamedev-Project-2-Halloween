@@ -26,6 +26,8 @@ public class ShopController : MonoBehaviour, ISaveSystem
     [SerializeField] 
     private TMP_Text effectText;
     [SerializeField] 
+    private TMP_Text costText;
+    [SerializeField] 
     private Image skillImage;
     [SerializeField] 
     private Button leftSkillButton;
@@ -37,6 +39,8 @@ public class ShopController : MonoBehaviour, ISaveSystem
     private Button downSkillButton;
     [SerializeField] 
     private TMP_Text moneyText;
+    [SerializeField] 
+    private TMP_Text nightText;
     [SerializeField]
     private SaveSystem saveSystem;
     private List<SkillButton> skills = new List<SkillButton>();
@@ -109,6 +113,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         titleText.gameObject.SetActive(false);
         subTitleText.gameObject.SetActive(false);
         effectText.gameObject.SetActive(false);
+        costText.gameObject.SetActive(false);
         skillImage.gameObject.SetActive(false);
     }
 
@@ -183,6 +188,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         SwitchTitleText(selectedSkill.title);
         SwitchSubTitleText(selectedSkill.subTitle);
         SwitchEffectText(selectedSkill.effect);
+        SwitchCostText(selectedSkill.cost);
     }
 
     public void SwitchUpgradeText()
@@ -190,6 +196,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         SwitchTitleText(selectedUpgrade.title);
         SwitchSubTitleText(selectedUpgrade.subTitle);
         SwitchEffectText(selectedUpgrade.effect);
+        SwitchCostText(selectedUpgrade.cost);
     }
 
     public void SwitchTitleText(string text)
@@ -218,11 +225,18 @@ public class ShopController : MonoBehaviour, ISaveSystem
         }
         effectText.text = text;
     }
+    public void SwitchCostText(int cost)
+    {
+        if (!costText.IsActive())
+        {
+            costText.gameObject.SetActive(true);
+        }
+        costText.text = "$" + cost;
+    }
 
     public void PlayButton()
     {
-        //TODO change to load new day with settings
-        dayCount++;
+        saveSystem.SaveGame();
         SceneManager.LoadScene("Game");
     }
 
@@ -312,7 +326,11 @@ public class ShopController : MonoBehaviour, ISaveSystem
 
     public void SetMoneyText()
     {
-        moneyText.text = "Money:\n$" + money;
+        moneyText.text = "Money\n$" + money;
+    }
+    public void SetNightText()
+    {
+        nightText.text = "Night\n" + dayCount;
     }
 
     public void SetSkillButton()
@@ -466,6 +484,7 @@ public class ShopController : MonoBehaviour, ISaveSystem
         dayCount = data.dayCount;
         money = data.money;
         SetMoneyText();
+        SetNightText();
         skills = data.skills;
         upgrades = data.upgrades;
         for(int i = 0; i < skills.Count; i++)
@@ -534,7 +553,6 @@ public class ShopController : MonoBehaviour, ISaveSystem
     public void SaveData(ref GameData data)
     {
         Debug.Log("Saving data from shop controller");
-        data.dayCount = this.dayCount;
         data.money = this.money;
         data.skills = this.skills;
         data.upgrades = this.upgrades;

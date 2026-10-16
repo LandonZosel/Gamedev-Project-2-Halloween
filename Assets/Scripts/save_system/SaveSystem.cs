@@ -41,8 +41,6 @@ public class SaveSystem : MonoBehaviour
         {
             saveObj.LoadData(gameData);
         }
-
-        Debug.Log("Loaded game, daycount: " + gameData.dayCount);
     }
 
     public void SaveGame()
@@ -52,13 +50,7 @@ public class SaveSystem : MonoBehaviour
             saveObj.SaveData(ref gameData);
         }
 
-        Debug.Log("Saved game, daycount: " + gameData.dayCount);
         fileHandler.Save(gameData);
-    }
-
-    private void OnApplicationQuit()
-    {
-        SaveGame();
     }
 
     private List<ISaveSystem> FindAllSaveSystemObjects()

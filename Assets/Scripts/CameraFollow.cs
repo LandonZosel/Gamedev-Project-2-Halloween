@@ -23,10 +23,6 @@ public class CameraFollow : MonoBehaviour
         Vector3 targetPosition = target.position + offset;
 
         transform.position = Vector3.Lerp(transform.position, targetPosition, smoothing * Time.deltaTime);
-        // if (transform.rotation.eulerAngles != targetRotation)
-        // {
-            
-        // }
 
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(targetRotation), smoothing * Time.deltaTime);
         

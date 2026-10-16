@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class CannonController : MonoBehaviour
+public class CannonController : MonoBehaviour, ISaveSystem
 {
     [SerializeField]
     private Image powerBar;
@@ -18,6 +18,8 @@ public class CannonController : MonoBehaviour
     private float shootForce = 10;
     private float minShootForce = 10;
     private float maxShootForce = 60;
+    private float fillStep = 3f;
+    private float moveStep = 2f;
     private bool step1Done = false;
     private bool step2Done = false;
     private bool step3Done = false;
@@ -28,6 +30,7 @@ public class CannonController : MonoBehaviour
     {
         UpdatePowerBar();
         powerBarBackground.enabled = false;
+        Debug.Log("Fillstep: " + fillStep);
     }
 
     // Update is called once per frame
@@ -35,7 +38,7 @@ public class CannonController : MonoBehaviour
     {
         if (!step1Done)
         {
-            transform.Rotate(new Vector3(0, 1 * rotationPolarity, 0));
+            transform.Rotate(new Vector3(0, moveStep * rotationPolarity, 0));
 
             if (transform.eulerAngles.y >= 60 && transform.eulerAngles.y <= 180)
             {
@@ -46,7 +49,7 @@ public class CannonController : MonoBehaviour
             }
         } else if (!step2Done)
         {
-            transform.Rotate(new Vector3(1 * rotationPolarity, 0, 0));
+            transform.Rotate(new Vector3(moveStep * rotationPolarity, 0, 0));
 
             if (transform.eulerAngles.x >= 10 && transform.eulerAngles.x <= 180)
             {
@@ -57,7 +60,7 @@ public class CannonController : MonoBehaviour
             }
         } else if (!step3Done)
         {
-            shootForce += 1 * shootPolarity;
+            shootForce += fillStep * shootPolarity;
 
             if (shootForce >= maxShootForce)
             {
@@ -109,6 +112,7 @@ public class CannonController : MonoBehaviour
     public void LoadData(GameData data)
     {
         Debug.Log("Loading data from cannon controller");
+        Debug.Log(data.upgrades);
         foreach (UpgradeButton upgrade in data.upgrades)
         {
             //check if upgrade purchased
@@ -118,28 +122,36 @@ public class CannonController : MonoBehaviour
                 switch (upgrade.upgrade)
                 {
                     case Upgrade.C1:
-                        minShootForce *= 2;
-                        maxShootForce *= 2;
+                        minShootForce *= 2f;
+                        maxShootForce *= 2f;
+                        fillStep *= 2f;
                         break;
                     case Upgrade.C2:
-                        minShootForce *= 2;
-                        maxShootForce *= 2;
+                        fillStep /= 1.75f;
+                        moveStep -= 0.5f;
                         break;
                     case Upgrade.C3:
-                        minShootForce *= 2;
-                        maxShootForce *= 2;
+                        minShootForce *= 2f;
+                        maxShootForce *= 2f;
+                        fillStep *= 2f;
                         break;
                     case Upgrade.C4:
-                        minShootForce *= 2;
-                        maxShootForce *= 2;
+                        fillStep /= 1.75f;
+                        moveStep -= 0.5f;
                         break;
                     case Upgrade.C5:
-                        minShootForce *= 2;
-                        maxShootForce *= 2;
+                        minShootForce *= 2f;
+                        maxShootForce *= 2f;
+                        fillStep *= 2f;
                         break;
                 }
             }
         }
+    }
+
+    public void SaveData(ref GameData data)
+    {
+        
     }
 }
 

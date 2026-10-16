@@ -77,7 +77,7 @@ public class BottomTextController : MonoBehaviour
         bottomText.text += text + "\n";
     }
 
-    public void AddTrampolineText()
+    public int AddTrampolineText()
     {
         string text = "Bounced on a trampoline!";
         TextData textData;
@@ -92,12 +92,17 @@ public class BottomTextController : MonoBehaviour
         textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, true, false);
         currentText.Add(textData);
         bottomText.text += text + "\n";
+        return trampolineMultiplier;
     }
 
-    public void AddGhostBurnText()
+    public int AddGhostBurnText(bool fire2)
     {
         string text = "Ghost BURNED";
         TextData textData;
+        if (fire2)
+        {
+            ghostMultiplier++;
+        }
         ghostMultiplier++;
         if (ghostMultiplier > 1)
         {
@@ -109,5 +114,6 @@ public class BottomTextController : MonoBehaviour
         textData = new TextData(text, now + fadeDelay, now + fadeDelay + fadeLength, false, true);
         currentText.Add(textData);
         bottomText.text += text + "\n";
+        return ghostMultiplier;
     }
 }
