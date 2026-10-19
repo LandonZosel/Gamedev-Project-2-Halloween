@@ -109,7 +109,7 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private GameObject ghost2;
     [SerializeField]
     private GameObject ghost3;
-    private float ghostSpawnInterval = 50f;
+    private float ghostSpawnInterval = 20f;
     private float lastGhostSpawnZ;
     [SerializeField]
     private GameObject moneyObj;
