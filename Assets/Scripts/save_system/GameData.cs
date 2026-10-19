@@ -18,7 +18,7 @@ public class GameData
         skills.Add(new SkillButton(Key.None, Skill.Hover, true, false, 20, "Hover", "Timed: Makes the pumpkin unable to lose height", "Cooldown: 30s\nTime: 5s", "hover_skill", Upgrade.Hover1));
         skills.Add(new SkillButton(Key.None, Skill.Magnet, false, false, 1500, "Magnet", "Timed: Attracts nearby objects", "Cooldown: 30s\nTime: 10s", "magnet_skill", Upgrade.Magnet1));
         skills.Add(new SkillButton(Key.None, Skill.Float, false, false, 300, "Float", "Timed: Makes the pumpkin slowly descend", "Cooldown: 30s\nTime: 10s", "float_skill", Upgrade.Float1));
-        skills.Add(new SkillButton(Key.None, Skill.Fire, true, false, 20, "Fire", "Timed: Sets the pumpkin on fire giving the ability to burn ghost", "Cooldown: 30s\nTime: 15s", "fire_skill", Upgrade.Fire1));
+        skills.Add(new SkillButton(Key.None, Skill.Fire, true, false, 20, "Fire", "Timed: Sets the pumpkin on fire giving the ability to burn ghosts", "Cooldown: 30s\nTime: 15s", "fire_skill", Upgrade.Fire1));
         skills.Add(new SkillButton(Key.None, Skill.Arrow, false, false, 300, "Arrow", "Timed: Gives an arrow that displays the pumpkins current trajectory", "Cooldown: 30s\nTime: 15s", "arrow_skill", Upgrade.Arrow1));
         skills.Add(new SkillButton(Key.None, Skill.GravityFlip, false, false, 1500, "Gravity Flip", "Timed: Inverts the affect of gravity", "Cooldown: 60s\nTime: 5s", "gravity_flip_skill", Upgrade.GravityFlip1));
         upgrades.Add(new UpgradeButton(Upgrade.C1, false, false, 50, "Cannon Upgrade 1", "Increases cannon power", "Power * 2", null, new List<Upgrade>(){Upgrade.Jump1}));

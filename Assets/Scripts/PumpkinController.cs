@@ -557,6 +557,8 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
         {
             ghost.SetActive(false);
             var currentMult = bottomText.AddGhostBurnText(fire2);
+            rig.linearVelocity = new Vector3(rig.linearVelocity.x, 0, rig.linearVelocity.z);
+            rig.AddForce(new Vector3(0, 2, 1) * 30f, ForceMode.VelocityChange);
             flame.Play();
             if (currentMult > maxGhostBurnedMultiplier)
             {
