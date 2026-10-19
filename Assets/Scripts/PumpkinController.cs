@@ -36,24 +36,32 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private Image leftSkillReference;
     [SerializeField]
     private Image leftFillReference;
+    [SerializeField]
+    private Image leftActiveFillReference;
     private bool upInput;
     private SkillKey upSkill;
     [SerializeField]
     private Image upSkillReference;
     [SerializeField]
     private Image upFillReference;
+    [SerializeField]
+    private Image upActiveFillReference;
     private bool rightInput;
     private SkillKey rightSkill;
     [SerializeField]
     private Image rightSkillReference;
     [SerializeField]
     private Image rightFillReference;
+    [SerializeField]
+    private Image rightActiveFillReference;
     private bool downInput;
     private SkillKey downSkill;
     [SerializeField]
     private Image downFillReference;
     [SerializeField]
     private Image downSkillReference;
+    [SerializeField]
+    private Image downActiveFillReference;
     private List<SkillKey> skillKeyList = new List<SkillKey>();
     private float jumpCooldown = 10f;
     private float jumpPower = 30f;
@@ -267,6 +275,16 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
             } else
             {
                 skillKey.fillReference.fillAmount = 0;
+            }
+
+            if (now < skillKey.endTime)
+            {
+                float greyFill = Mathf.Clamp01((now - skillKey.startCooldown)/(skillKey.endTime - skillKey.startCooldown));
+                greyFill = 1 - greyFill;
+                skillKey.activeFillReference.fillAmount = greyFill;
+            } else
+            {
+                skillKey.activeFillReference.fillAmount = 0;
             }
         }
         
@@ -785,12 +803,14 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private void SkillArrow(SkillKey skillKey)
     {
         arrowTime = Time.time + arrowLength;
+        skillKey.endTime = arrowTime;
         skillKey.endCooldown = Time.time + arrowCooldown;
     }
 
     private void SkillMagnet(SkillKey skillKey)
     {
         magnetTime = Time.time + magnetLength;
+        skillKey.endTime = magnetTime;
         skillKey.endCooldown = Time.time + magnetCooldown;
         magnetEffect.gameObject.SetActive(true);
         magnetEffect.Play();
@@ -799,24 +819,28 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
     private void SkillGravityFlip(SkillKey skillKey)
     {
         gravityFlipTime = Time.time + gravityFlipLength;
+        skillKey.endTime = gravityFlipTime;
         skillKey.endCooldown = Time.time + gravityFlipCooldown;
     }
 
     private void SkillHover(SkillKey skillKey)
     {
         hoverTime = Time.time + hoverLength;
+        skillKey.endTime = hoverTime;
         skillKey.endCooldown = Time.time + hoverCooldown;
     }
 
     private void SkillFloat(SkillKey skillKey)
     {
         floatTime = Time.time + floatLength;
+        skillKey.endTime = floatTime;
         skillKey.endCooldown = Time.time + floatCooldown;
     }
 
     private void SkillFire(SkillKey skillKey)
     {
         fireTime = Time.time + 20f;
+        skillKey.endTime = fireTime;
         skillKey.endCooldown = Time.time + fireCooldown;
     }
 
@@ -836,41 +860,49 @@ public class PumpkinController : MonoBehaviour, ISaveSystem
             switch (skill.keyAssigned)
             {
                 case Key.Left:
+                    leftActiveFillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     leftSkill = new SkillKey(
                         Key.Left,
                         skill.skill,
                         skill.imageFileName,
-                        leftFillReference
+                        leftFillReference,
+                        leftActiveFillReference
                     );
                     leftSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     skillKeyList.Add(leftSkill);
                     break;
                 case Key.Up:
+                    upActiveFillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     upSkill = new SkillKey(
                         Key.Up,
                         skill.skill,
                         skill.imageFileName,
-                        upFillReference
+                        upFillReference,
+                        upActiveFillReference
                     );
                     upSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     skillKeyList.Add(upSkill);
                     break;
                 case Key.Right:
+                    rightActiveFillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     rightSkill = new SkillKey(
                         Key.Right,
                         skill.skill,
                         skill.imageFileName,
-                        rightFillReference
+                        rightFillReference,
+                        rightActiveFillReference
                     );
                     rightSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     skillKeyList.Add(rightSkill);
                     break;
                 case Key.Down:
+                    downActiveFillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     downSkill = new SkillKey(
                         Key.Down,
                         skill.skill,
                         skill.imageFileName,
-                        downFillReference
+                        downFillReference,
+                        downActiveFillReference
                     );
                     downSkillReference.sprite = Resources.Load<Sprite>("Sprites/" + skill.imageFileName);
                     skillKeyList.Add(downSkill);
