@@ -7,8 +7,20 @@ public class MainMenuController : MonoBehaviour, ISaveSystem
     [SerializeField]
     private Button continueButton;
     [SerializeField]
+    private Image volumeIcon;
+    [SerializeField]
+    private Sprite volumeOn;
+    [SerializeField]
+    private Sprite volumeMuted;
+    private bool isMuted = false;
+    [SerializeField]
     private SaveSystem saveSystem;
     GameData data;
+    void Awake()
+    {
+        isMuted = AudioListener.pause;
+        volumeIcon.sprite = isMuted ? volumeMuted : volumeOn;
+    }
     public void PlayButton()
     {
         SceneManager.LoadScene("Shop");
@@ -22,6 +34,18 @@ public class MainMenuController : MonoBehaviour, ISaveSystem
     public void QuitButton()
     {
         Application.Quit();
+    }
+
+    public void FullScreenButton()
+    {
+        Screen.fullScreen = !Screen.fullScreen;
+    }
+
+    public void VolumeButton()
+    {
+        isMuted = !isMuted;
+        AudioListener.pause = isMuted;
+        volumeIcon.sprite = isMuted ? volumeMuted : volumeOn;
     }
 
     public void LoadData(GameData data)
